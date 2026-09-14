@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+*.egg-info/
+# OS / editors
+.DS_Store
+.vscode/
+.idea/
+# Local data (large, regenerable)
+data/
+*.wav
+# Checkpoints (keep curated ones only)
+*.log
+# Compiled binaries
+tools/verify_feature_parity/verify_parity
