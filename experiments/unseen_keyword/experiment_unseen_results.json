@@ -1,0 +1,208 @@
+{
+  "timestamp": "2026-09-10T23:46:24.709809",
+  "milestone": "Milestone 9: Unseen-Word Evaluation (Few-Shot ZORA Test)",
+  "datasets": {
+    "target_keyword_zora_samples": 30,
+    "target_keyword_marvin_samples": 30,
+    "negative_impostor_samples": 200,
+    "noise_samples": 50
+  },
+  "zora_evaluation_tiny_cnn": {
+    "keyword_name": "ZORA",
+    "total_target_samples": 30,
+    "total_impostor_samples": 200,
+    "shot_evaluations": {
+      "1_shot": {
+        "k_shots": 1,
+        "num_trials": 15,
+        "mean_positive_sim": 0.9204,
+        "std_positive_sim": 0.0554,
+        "mean_negative_sim": 0.6733,
+        "std_negative_sim": 0.2076,
+        "separation_margin": 0.2471,
+        "roc_auc": 0.9109,
+        "equal_error_rate": 0.1783,
+        "eer_threshold": 0.8691,
+        "tpr_at_5pct_fpr": 0.5126,
+        "tpr_at_1pct_fpr": 0.3149
+      },
+      "2_shot": {
+        "k_shots": 2,
+        "num_trials": 15,
+        "mean_positive_sim": 0.9375,
+        "std_positive_sim": 0.0464,
+        "mean_negative_sim": 0.6768,
+        "std_negative_sim": 0.213,
+        "separation_margin": 0.2607,
+        "roc_auc": 0.9463,
+        "equal_error_rate": 0.1313,
+        "eer_threshold": 0.89,
+        "tpr_at_5pct_fpr": 0.6643,
+        "tpr_at_1pct_fpr": 0.4595
+      },
+      "3_shot": {
+        "k_shots": 3,
+        "num_trials": 15,
+        "mean_positive_sim": 0.9383,
+        "std_positive_sim": 0.0414,
+        "mean_negative_sim": 0.6928,
+        "std_negative_sim": 0.2004,
+        "separation_margin": 0.2455,
+        "roc_auc": 0.9458,
+        "equal_error_rate": 0.1305,
+        "eer_threshold": 0.8927,
+        "tpr_at_5pct_fpr": 0.6346,
+        "tpr_at_1pct_fpr": 0.4444
+      },
+      "5_shot": {
+        "k_shots": 5,
+        "num_trials": 15,
+        "mean_positive_sim": 0.9509,
+        "std_positive_sim": 0.0269,
+        "mean_negative_sim": 0.6911,
+        "std_negative_sim": 0.2094,
+        "separation_margin": 0.2598,
+        "roc_auc": 0.971,
+        "equal_error_rate": 0.0772,
+        "eer_threshold": 0.9193,
+        "tpr_at_5pct_fpr": 0.7413,
+        "tpr_at_1pct_fpr": 0.4987
+      }
+    }
+  },
+  "zora_evaluation_ds_cnn": {
+    "keyword_name": "ZORA",
+    "total_target_samples": 30,
+    "total_impostor_samples": 200,
+    "shot_evaluations": {
+      "1_shot": {
+        "k_shots": 1,
+        "num_trials": 15,
+        "mean_positive_sim": 0.9969,
+        "std_positive_sim": 0.002,
+        "mean_negative_sim": 0.9647,
+        "std_negative_sim": 0.0222,
+        "separation_margin": 0.0322,
+        "roc_auc": 0.9889,
+        "equal_error_rate": 0.0374,
+        "eer_threshold": 0.9938,
+        "tpr_at_5pct_fpr": 0.9448,
+        "tpr_at_1pct_fpr": 0.7195
+      },
+      "2_shot": {
+        "k_shots": 2,
+        "num_trials": 15,
+        "mean_positive_sim": 0.9977,
+        "std_positive_sim": 0.0013,
+        "mean_negative_sim": 0.9666,
+        "std_negative_sim": 0.0212,
+        "separation_margin": 0.0311,
+        "roc_auc": 0.9976,
+        "equal_error_rate": 0.0119,
+        "eer_threshold": 0.9954,
+        "tpr_at_5pct_fpr": 0.9929,
+        "tpr_at_1pct_fpr": 0.9429
+      },
+      "3_shot": {
+        "k_shots": 3,
+        "num_trials": 15,
+        "mean_positive_sim": 0.998,
+        "std_positive_sim": 0.001,
+        "mean_negative_sim": 0.9671,
+        "std_negative_sim": 0.0207,
+        "separation_margin": 0.0308,
+        "roc_auc": 0.9989,
+        "equal_error_rate": 0.0062,
+        "eer_threshold": 0.9958,
+        "tpr_at_5pct_fpr": 1.0,
+        "tpr_at_1pct_fpr": 0.9778
+      },
+      "5_shot": {
+        "k_shots": 5,
+        "num_trials": 15,
+        "mean_positive_sim": 0.9982,
+        "std_positive_sim": 0.0009,
+        "mean_negative_sim": 0.9667,
+        "std_negative_sim": 0.0211,
+        "separation_margin": 0.0315,
+        "roc_auc": 0.9992,
+        "equal_error_rate": 0.0058,
+        "eer_threshold": 0.9963,
+        "tpr_at_5pct_fpr": 1.0,
+        "tpr_at_1pct_fpr": 0.9813
+      }
+    }
+  },
+  "marvin_evaluation_tiny_cnn": {
+    "keyword_name": "MARVIN",
+    "total_target_samples": 30,
+    "total_impostor_samples": 200,
+    "shot_evaluations": {
+      "1_shot": {
+        "k_shots": 1,
+        "num_trials": 15,
+        "mean_positive_sim": 0.8124,
+        "std_positive_sim": 0.1156,
+        "mean_negative_sim": 0.6487,
+        "std_negative_sim": 0.2249,
+        "separation_margin": 0.1638,
+        "roc_auc": 0.7544,
+        "equal_error_rate": 0.3098,
+        "eer_threshold": 0.7906,
+        "tpr_at_5pct_fpr": 0.1954,
+        "tpr_at_1pct_fpr": 0.0575
+      },
+      "2_shot": {
+        "k_shots": 2,
+        "num_trials": 15,
+        "mean_positive_sim": 0.8615,
+        "std_positive_sim": 0.1073,
+        "mean_negative_sim": 0.674,
+        "std_negative_sim": 0.22,
+        "separation_margin": 0.1875,
+        "roc_auc": 0.8059,
+        "equal_error_rate": 0.2606,
+        "eer_threshold": 0.8417,
+        "tpr_at_5pct_fpr": 0.3214,
+        "tpr_at_1pct_fpr": 0.0881
+      },
+      "3_shot": {
+        "k_shots": 3,
+        "num_trials": 15,
+        "mean_positive_sim": 0.8584,
+        "std_positive_sim": 0.0938,
+        "mean_negative_sim": 0.7023,
+        "std_negative_sim": 0.1958,
+        "separation_margin": 0.1561,
+        "roc_auc": 0.7845,
+        "equal_error_rate": 0.2788,
+        "eer_threshold": 0.8428,
+        "tpr_at_5pct_fpr": 0.2864,
+        "tpr_at_1pct_fpr": 0.1062
+      },
+      "5_shot": {
+        "k_shots": 5,
+        "num_trials": 15,
+        "mean_positive_sim": 0.8798,
+        "std_positive_sim": 0.0815,
+        "mean_negative_sim": 0.7123,
+        "std_negative_sim": 0.187,
+        "separation_margin": 0.1675,
+        "roc_auc": 0.8364,
+        "equal_error_rate": 0.2138,
+        "eer_threshold": 0.8616,
+        "tpr_at_5pct_fpr": 0.4053,
+        "tpr_at_1pct_fpr": 0.1333
+      }
+    }
+  },
+  "enrolled_3shot_zora": {
+    "keyword_name": "ZORA",
+    "k_shots": 3,
+    "intra_similarity_mean": 0.9945,
+    "prototype_shape": [
+      32
+    ],
+    "c_header_path": "D:\\SIH_Model\\src\\deployment\\esp32\\keyword_prototype.h"
+  }
+}

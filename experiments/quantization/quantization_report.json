@@ -1,0 +1,55 @@
+{
+  "timestamp": "2026-09-11 00:01:08",
+  "models": {
+    "tiny_cnn": {
+      "fp32": {
+        "path": "D:\\SIH_Model\\models\\tflite\\voice_activator_fp32.tflite",
+        "size_bytes": 197512,
+        "size_kb": 192.8828125,
+        "latency_ms": 0.31
+      },
+      "int8": {
+        "path": "D:\\SIH_Model\\models\\tflite\\voice_activator_int8.tflite",
+        "size_bytes": 57760,
+        "size_kb": 56.40625,
+        "latency_ms": 0.16,
+        "compression_ratio_pct": 70.76,
+        "flash_budget_target_kb": 100.0,
+        "flash_budget_met": true
+      }
+    },
+    "ds_cnn": {
+      "int8": {
+        "path": "D:\\SIH_Model\\models\\tflite\\voice_activator_ds_cnn_int8.tflite",
+        "size_bytes": 33280,
+        "size_kb": 32.5,
+        "flash_budget_met": true
+      }
+    }
+  },
+  "fidelity": {
+    "eval_samples_count": 200,
+    "mean_cosine_similarity": 0.999584,
+    "min_cosine_similarity": 0.996096,
+    "max_cosine_similarity": 0.999906,
+    "max_norm_deviation": 0.007964,
+    "mean_norm_deviation": 0.002378
+  },
+  "unseen_keyword_zora_int8": {
+    "prototype_alignment_cosine": 0.999726,
+    "mean_similarity_fp32": 0.9112,
+    "mean_similarity_int8": 0.9109,
+    "correlation_fp32_vs_int8": 0.998261,
+    "decision_agreement_pct": 100.0
+  },
+  "sih_requirements_compliance": {
+    "flash_memory_target_kb": "< 100 KB",
+    "flash_memory_measured_kb": 56.41,
+    "flash_constraint_satisfied": true,
+    "sram_tensor_arena_estimate_kb": "< 40 KB",
+    "sram_constraint_satisfied": true,
+    "cosine_fidelity_target": "> 0.99",
+    "cosine_fidelity_measured": 0.999584,
+    "fidelity_constraint_satisfied": true
+  }
+}

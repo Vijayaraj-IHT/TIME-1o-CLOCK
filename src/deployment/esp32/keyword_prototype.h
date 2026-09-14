@@ -1,0 +1,22 @@
+/*
+ * Auto-generated Keyword Prototype Header
+ * SIH Problem Statement 26172
+ * Keyword: JUMP
+ * Embedding Dimension: 32
+ * Hypersphere Normalized: True (||p||_2 = 1.0)
+ */
+
+#ifndef KEYWORD_PROTOTYPE_H_
+#define KEYWORD_PROTOTYPE_H_
+
+#define ENROLLED_KEYWORD_NAME "JUMP"
+#define KEYWORD_PROTOTYPE_DIM 32
+#define EMBEDDING_DIMENSION KEYWORD_PROTOTYPE_DIM
+#define ENROLLED_KEYWORD_PROTOTYPE KEYWORD_PROTOTYPE
+
+// L2-normalized prototype vector centroid on 32-D unit hypersphere
+static const float KEYWORD_PROTOTYPE[KEYWORD_PROTOTYPE_DIM] = {
+    0.0764480f, -0.1502476f, 0.0395758f, 0.3084581f, 0.1028727f, -0.0211269f, -0.2926468f, 0.1160692f, 0.0184292f, -0.1845621f, -0.1133477f, -0.3796507f, -0.2557706f, -0.0817270f, -0.1818181f, -0.0342958f, -0.1001661f, 0.1555533f, -0.1398040f, 0.4139742f, 0.1635083f, -0.1925074f, -0.0052820f, 0.0026336f, -0.1001513f, 0.1739972f, 0.1818753f, 0.0026099f, -0.1792437f, -0.1001444f, 0.1714347f, -0.1819108f
+};
+
+#endif // KEYWORD_PROTOTYPE_H_

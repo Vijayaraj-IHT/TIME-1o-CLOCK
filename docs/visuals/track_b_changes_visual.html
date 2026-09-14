@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>7 Changes — Before vs After | TIME-1o-CLOCK</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0b1020; color: #e6e9f2; font-family: 'Segoe UI', system-ui, sans-serif; line-height: 1.6; padding: 24px 16px 60px; }
+  .wrap { max-width: 960px; margin: 0 auto; }
+  .hero-img { width: 100%; border-radius: 16px; border: 1px solid #2a3350; display: block; }
+  h1 { font-size: 1.9rem; margin: 18px 0 4px; text-align: center; }
+  h1 .accent { color: #4ade80; }
+  .sub { text-align: center; color: #9aa3bd; margin-bottom: 6px; }
+  .nav { text-align: center; margin-bottom: 26px; }
+  .nav a { color: #22d3ee; text-decoration: none; font-size: .9rem; }
+  .card { background: #121830; border: 1px solid #2a3350; border-radius: 14px; padding: 22px; margin-bottom: 22px; }
+  .card h2 { font-size: 1.25rem; margin-bottom: 4px; }
+  .card .tag { display: inline-block; font-size: .72rem; font-weight: 700; padding: 2px 10px; border-radius: 20px; margin-bottom: 12px; letter-spacing: .3px; }
+  .p0 { background: #3b1116; color: #f87171; border: 1px solid #7f1d1d; }
+  .p1 { background: #3a2a08; color: #facc15; border: 1px solid #854d0e; }
+  .p2 { background: #0e2a3a; color: #22d3ee; border: 1px solid #0e7490; }
+  .badge { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 50%; font-weight: 800; font-size: .95rem; margin-right: 8px; vertical-align: middle; }
+  .b1 { background: #f87171; color: #200; } .b2 { background: #fb923c; color: #200; }
+  .b3 { background: #facc15; color: #220; } .b4 { background: #4ade80; color: #020; }
+  .b5 { background: #22d3ee; color: #022; } .b6 { background: #a78bfa; color: #102; }
+  .b7 { background: #f472b6; color: #200; }
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px; }
+  @media (max-width: 640px) { .cols { grid-template-columns: 1fr; } }
+  .before, .after { border-radius: 10px; padding: 14px; }
+  .before { background: #1c1220; border: 1px solid #7f1d1d; }
+  .after { background: #0e2018; border: 1px solid #166534; }
+  .before h3 { color: #f87171; font-size: .95rem; margin-bottom: 8px; }
+  .after h3 { color: #4ade80; font-size: .95rem; margin-bottom: 8px; }
+  .mono { font-family: Consolas, monospace; background: #0b1020; border-radius: 6px; padding: 10px; font-size: .85rem; margin-top: 8px; white-space: pre-wrap; }
+  .note { color: #9aa3bd; font-size: .85rem; margin-top: 10px; }
+  .warn { background: #2a1503; border: 1px solid #9a3412; color: #fdba74; border-radius: 10px; padding: 12px 16px; font-size: .88rem; margin-top: 14px; }
+  svg { width: 100%; height: auto; display: block; background: #0b1020; border-radius: 10px; margin-top: 12px; }
+  .legend { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; font-size: .8rem; color: #9aa3bd; }
+  .legend span { background: #1a2240; padding: 3px 10px; border-radius: 16px; }
+  table.roi { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: .9rem; }
+  table.roi th, table.roi td { text-align: left; padding: 9px 10px; border-bottom: 1px solid #2a3350; }
+  table.roi th { color: #9aa3bd; font-size: .78rem; text-transform: uppercase; letter-spacing: .5px; }
+  .hbars div.row { margin: 10px 0; }
+  .hbars .lbl { font-size: .85rem; margin-bottom: 4px; }
+  .hbars .bar { height: 22px; border-radius: 6px; }
+  .dots { display: flex; gap: 14px; align-items: center; margin-top: 10px; flex-wrap: wrap; }
+  .dot { width: 26px; height: 26px; border-radius: 50%; background: #4ade80; box-shadow: 0 0 10px #4ade80aa; }
+  .dot.halo { box-shadow: 0 0 0 6px #4ade8033, 0 0 14px #4ade80; }
+  .stripe13 { height: 56px; border-radius: 8px; background: repeating-linear-gradient(90deg, #22d3ee 0 14px, #0b1020 14px 30px); border: 1px solid #2a3350; margin-top: 8px; }
+  .stripe40 { height: 56px; border-radius: 8px; background: repeating-linear-gradient(90deg, #a78bfa 0 6px, #0b1020 6px 12px); border: 1px solid #2a3350; margin-top: 8px; }
+  footer { text-align: center; color: #9aa3bd; font-size: .85rem; margin-top: 30px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<img class="hero-img" src="track_b_changes_hero.jpg" alt="ESP32 listening through noise — shield blocks false alarms">
+<h1>7 Changes — <span class="accent">Before vs After</span> 🔬</h1>
+<p class="sub">Research papers lendhu edutha 7 ideas — namma pipeline-la enga, enna maarum?</p>
+<div class="nav"><a href="track_b_visual_guide.html">← Back to main visual guide</a></div>
+
+<!-- 0. PIPELINE MAP -->
+<div class="card">
+  <h2>🗺️ Pipeline map — 7 changes enga land aagum?</h2>
+  <p class="note">Number badge = change number. Manjal/colour pins irukara stage dhaan maarum.</p>
+  <svg viewBox="0 0 920 300" font-family="Segoe UI, sans-serif">
+    <!-- main stages -->
+    <g font-size="15" font-weight="700" text-anchor="middle">
+      <rect x="10" y="30" width="120" height="56" rx="10" fill="#1a2240" stroke="#3b4769"/>
+      <text x="70" y="55" fill="#e6e9f2">🎤 Mic</text><text x="70" y="74" font-size="11" font-weight="400" fill="#9aa3bd">audio in</text>
+      <rect x="160" y="30" width="130" height="56" rx="10" fill="#1a2240" stroke="#f472b6" stroke-width="2"/>
+      <text x="225" y="55" fill="#e6e9f2">MFCC</text><text x="225" y="74" font-size="11" font-weight="400" fill="#9aa3bd">13 coeffs</text>
+      <rect x="320" y="30" width="130" height="56" rx="10" fill="#1a2240" stroke="#3b4769"/>
+      <text x="385" y="55" fill="#e6e9f2">CNN</text><text x="385" y="74" font-size="11" font-weight="400" fill="#9aa3bd">32-dim embed</text>
+      <rect x="480" y="30" width="130" height="56" rx="10" fill="#1a2240" stroke="#fb923c" stroke-width="2"/>
+      <text x="545" y="55" fill="#e6e9f2">Matcher</text><text x="545" y="74" font-size="11" font-weight="400" fill="#9aa3bd">prototype</text>
+      <rect x="640" y="30" width="120" height="56" rx="10" fill="#1a2240" stroke="#f87171" stroke-width="2"/>
+      <text x="700" y="55" fill="#e6e9f2">Threshold</text><text x="700" y="74" font-size="11" font-weight="400" fill="#9aa3bd">τ compare</text>
+      <rect x="790" y="30" width="120" height="56" rx="10" fill="#1a2240" stroke="#4ade80" stroke-width="2"/>
+      <text x="850" y="55" fill="#e6e9f2">Smooth</text><text x="850" y="74" font-size="11" font-weight="400" fill="#9aa3bd">→ 🔔 WAKE</text>
+    </g>
+    <!-- arrows -->
+    <g stroke="#3b4769" stroke-width="2" marker-end="url(#ah)">
+      <defs><marker id="ah" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8" fill="none" stroke="#3b4769" stroke-width="1.5"/></marker></defs>
+      <line x1="130" y1="58" x2="156" y2="58"/><line x1="290" y1="58" x2="316" y2="58"/>
+      <line x1="450" y1="58" x2="476" y2="58"/><line x1="610" y1="58" x2="636" y2="58"/>
+      <line x1="760" y1="58" x2="786" y2="58"/>
+    </g>
+    <!-- pins on stages -->
+    <g font-size="13" font-weight="800" text-anchor="middle">
+      <circle cx="278" cy="32" r="14" fill="#f472b6"/><text x="278" y="37" fill="#200">7</text>
+      <circle cx="532" cy="32" r="14" fill="#fb923c"/><text x="532" y="37" fill="#200">2</text>
+      <circle cx="562" cy="32" r="14" fill="#a78bfa"/><text x="562" y="37" fill="#102">6</text>
+      <circle cx="700" cy="32" r="14" fill="#f87171"/><text x="700" y="37" fill="#200">1</text>
+      <circle cx="850" cy="32" r="14" fill="#4ade80"/><text x="850" y="37" fill="#020">4</text>
+    </g>
+    <!-- side inputs -->
+    <g font-size="15" font-weight="700" text-anchor="middle">
+      <rect x="480" y="140" width="130" height="56" rx="10" fill="#1a2240" stroke="#22d3ee" stroke-width="2"/>
+      <text x="545" y="165" fill="#e6e9f2">Enroll</text><text x="545" y="184" font-size="11" font-weight="400" fill="#9aa3bd">K shots → template</text>
+      <rect x="480" y="220" width="130" height="56" rx="10" fill="#1a2240" stroke="#facc15" stroke-width="2"/>
+      <text x="545" y="245" fill="#e6e9f2">Keyword</text><text x="545" y="264" font-size="11" font-weight="400" fill="#9aa3bd">ZORA / JUMP?</text>
+      <line x1="545" y1="140" x2="545" y2="90" stroke="#22d3ee" stroke-width="2" marker-end="url(#ah2)"/>
+      <line x1="545" y1="220" x2="545" y2="200" stroke="#facc15" stroke-width="2" marker-end="url(#ah3)"/>
+      <defs>
+        <marker id="ah2" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8" fill="none" stroke="#22d3ee" stroke-width="1.5"/></marker>
+        <marker id="ah3" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8" fill="none" stroke="#facc15" stroke-width="1.5"/></marker>
+      </defs>
+      <circle cx="598" cy="142" r="14" fill="#22d3ee"/><text x="598" y="147" font-size="13" fill="#022">5</text>
+      <circle cx="598" cy="222" r="14" fill="#facc15"/><text x="598" y="227" font-size="13" fill="#220">3</text>
+    </g>
+  </svg>
+  <div class="legend">
+    <span><b style="color:#f87171">①</b> Threshold</span><span><b style="color:#fb923c">②</b> Garbage template</span>
+    <span><b style="color:#facc15">③</b> Keyword</span><span><b style="color:#4ade80">④</b> Smoothing</span>
+    <span><b style="color:#22d3ee">⑤</b> Enrollment</span><span><b style="color:#a78bfa">⑥</b> Multi-template</span>
+    <span><b style="color:#f472b6">⑦</b> Frontend retrain</span>
+  </div>
+</div>
+
+<!-- WATERFALL -->
+<div class="card">
+  <h2>📉 Periya padam — FA/hr enna aagum? (projection)</h2>
+  <p class="note">1308/hr lendhu target ≤10/hr — ovvoru change-um leak-a konjam adakkum. Log scale (1308 perusu, adhunala).</p>
+  <svg viewBox="0 0 920 320" font-family="Segoe UI, sans-serif">
+    <g font-size="14">
+      <!-- gridlines log scale: x = 180 + log10(v)*200 -->
+      <line x1="180" y1="20" x2="180" y2="250" stroke="#2a3350"/><text x="180" y="270" fill="#9aa3bd" text-anchor="middle">1</text>
+      <line x1="380" y1="20" x2="380" y2="250" stroke="#2a3350"/><text x="380" y="270" fill="#9aa3bd" text-anchor="middle">10</text>
+      <line x1="580" y1="20" x2="580" y2="250" stroke="#2a3350"/><text x="580" y="270" fill="#9aa3bd" text-anchor="middle">100</text>
+      <line x1="780" y1="20" x2="780" y2="250" stroke="#2a3350"/><text x="780" y="270" fill="#9aa3bd" text-anchor="middle">1000</text>
+      <text x="480" y="295" fill="#9aa3bd" text-anchor="middle" font-size="12">false alarms / hour (log scale →)</text>
+      <!-- bars: x2 = 180+log10(v)*200 -->
+      <text x="10" y="55" fill="#e6e9f2">Ippo 😱</text>
+      <rect x="180" y="35" width="623" height="30" rx="6" fill="#f87171"/><text x="810" y="57" fill="#f87171" font-weight="700">1308</text>
+      <text x="10" y="105" fill="#e6e9f2">① Threshold ~0.89</text>
+      <rect x="180" y="85" width="495" height="30" rx="6" fill="#fb923c"/><text x="682" y="107" fill="#fb923c" font-weight="700">~300</text>
+      <text x="10" y="155" fill="#e6e9f2">+ ② Garbage template</text>
+      <rect x="180" y="135" width="356" height="30" rx="6" fill="#facc15"/><text x="543" y="157" fill="#facc15" font-weight="700">~60</text>
+      <text x="10" y="205" fill="#e6e9f2">+ ④ Smoothing</text>
+      <rect x="180" y="185" width="235" height="30" rx="6" fill="#4ade80"/><text x="422" y="207" fill="#4ade80" font-weight="700">~15</text>
+      <!-- target -->
+      <line x1="380" y1="20" x2="380" y2="250" stroke="#4ade80" stroke-width="2" stroke-dasharray="6,4"/>
+      <text x="388" y="30" fill="#4ade80" font-size="12" font-weight="700">SIH target ≤10/hr ✅</text>
+    </g>
+  </svg>
+  <div class="warn">⚠️ Indha numbers <b>illustrative projection</b> (papers + reasoning lendhu guess) — guarantee illa! Real numbers-a namma data-la <b>measure pannanum</b>. Direction mattum nambunga: ①→②→④ order-la FA/hr keezha varum.</div>
+</div>
+
+<!-- CHANGE 1 -->
+<div class="card">
+  <span class="tag p0">P0 — FIRST DO THIS</span>
+  <h2><span class="badge b1">1</span>Threshold: 5 numbers → 1 number (Kim 2019)</h2>
+  <p class="note">Score distribution: pasche keyword (green, right side) vs background saththam (blue, left side). Red line enga potaalo adhu dhaan threshold — line-ku right side ellaame WAKE.</p>
+  <svg viewBox="0 0 920 300" font-family="Segoe UI, sans-serif">
+    <g font-size="13" font-weight="700">
+      <text x="20" y="25" fill="#f87171">BEFORE: τ = 0.78 ❌</text>
+      <text x="480" y="25" fill="#4ade80">AFTER: τ ≈ 0.89 + shuffle-calibrate ✅</text>
+    </g>
+    <!-- LEFT panel -->
+    <g>
+      <line x1="20" y1="250" x2="440" y2="250" stroke="#3b4769"/>
+      <text x="20" y="270" fill="#9aa3bd" font-size="11">0.3</text><text x="420" y="270" fill="#9aa3bd" font-size="11">1.0</text>
+      <text x="230" y="270" fill="#9aa3bd" font-size="11">similarity →</text>
+      <path d="M60,250 C60,140 110,130 163,130 C216,130 266,140 266,250 Z" fill="#3b82f644" stroke="#3b82f6" stroke-width="2"/>
+      <text x="120" y="220" fill="#3b82f6" font-size="12">background</text>
+      <path d="M330,250 C330,120 355,110 380,110 C405,110 430,120 430,250 Z" fill="#4ade8044" stroke="#4ade80" stroke-width="2"/>
+      <text x="352" y="220" fill="#4ade80" font-size="12">keyword</text>
+      <line x1="294" y1="60" x2="294" y2="250" stroke="#f87171" stroke-width="2.5" stroke-dasharray="7,4"/>
+      <text x="300" y="80" fill="#f87171" font-size="12" font-weight="700">τ=0.78</text>
+      <path d="M294,250 C294,175 280,160 266,155 L266,250 Z" fill="#f8717166"/>
+      <text x="180" y="100" fill="#f87171" font-size="12">leak! background-um WAKE 😱 →</text>
+    </g>
+    <!-- RIGHT panel -->
+    <g>
+      <line x1="480" y1="250" x2="900" y2="250" stroke="#3b4769"/>
+      <text x="480" y="270" fill="#9aa3bd" font-size="11">0.3</text><text x="880" y="270" fill="#9aa3bd" font-size="11">1.0</text>
+      <text x="690" y="270" fill="#9aa3bd" font-size="11">similarity →</text>
+      <path d="M520,250 C520,140 570,130 623,130 C676,130 726,140 726,250 Z" fill="#3b82f644" stroke="#3b82f6" stroke-width="2"/>
+      <text x="580" y="220" fill="#3b82f6" font-size="12">background</text>
+      <path d="M790,250 C790,120 815,110 840,110 C865,110 890,120 890,250 Z" fill="#4ade8044" stroke="#4ade80" stroke-width="2"/>
+      <text x="812" y="220" fill="#4ade80" font-size="12">keyword</text>
+      <line x1="754" y1="60" x2="754" y2="250" stroke="#4ade80" stroke-width="2.5" stroke-dasharray="7,4"/>
+      <text x="700" y="80" fill="#4ade80" font-size="12" font-weight="700">τ≈0.89</text>
+      <text x="560" y="100" fill="#4ade80" font-size="12">leak ~zero ✅ + shuffle-negatives auto-tune</text>
+    </g>
+  </svg>
+  <div class="cols">
+    <div class="before"><h3>❌ Before</h3>τ=0.78 line background tail-a cut pandradhu — saththam vandhaalum WAKE. 1308/hr.<div class="mono">if score > 0.78: WAKE  # 5 places, 5 values 😵</div></div>
+    <div class="after"><h3>✅ After</h3>τ≈0.89 (EER lendhu) + enroll recordings-a shuffle panni auto-calibrate.<div class="mono">if score > 0.89: WAKE  # 1 place, 1 value 🎯</div></div>
+  </div>
+</div>
+
+<!-- CHANGE 2 -->
+<div class="card">
+  <span class="tag p0">P0 — BIGGEST FA FIX</span>
+  <h2><span class="badge b2">2</span>"Keyword illa" template (D-ProtoNets + Sphinx garbage loop)</h2>
+  <div class="cols">
+    <div class="before"><h3>❌ Before — oru kelvi mattum</h3>
+      <div class="mono">noise vandhudhu...
+sim(noise, ZORA) = 0.86
+0.86 > 0.78 → 🔔 WAKE ❌
+(vera saththam, aana yaarum "illa"-nu sollala!)</div>
+    </div>
+    <div class="after"><h3>✅ After — rendu pera compare</h3>
+      <div class="mono">noise vandhudhu...
+sim(noise, ZORA)    = 0.86
+sim(noise, GARBAGE) = 0.91  ← win!
+garbage wins → 🔇 SILENT ✅</div>
+    </div>
+  </div>
+  <p class="note">Paper proof: vanilla prototypes open-set reject-la weak (68%) → dummy/garbage add panna 87%. Retraining vendaam — negatives-oda mean oru extra template-a vechuka, 5-line code. 🧠 Analogy: <i>"idhudhaan thirudan-a?"</i> nu photo compare panra bodhu, <i>"illa, idhu veetukkarar"</i> nu solla oru reference photo vechukaradhu maadhiri.</p>
+</div>
+
+<!-- CHANGE 3 -->
+<div class="card">
+  <span class="tag p1">P1 — CODE CHANGE-E ILLA</span>
+  <h2><span class="badge b3">3</span>Keyword-a maathunga: short word = FA magnet</h2>
+  <p class="note">Paper proof (Kim'19: 'Hey Snips' short → FA jaasthi; Sphinx forum: "3 syllables!"). Physics: chinna word vera saththathula easy-a olidum.</p>
+  <div class="hbars">
+    <div class="row"><div class="lbl">JUMP (1 syllable) 😱 — ippo test-la irukku!</div><div class="bar" style="width:95%;background:#f87171"></div></div>
+    <div class="row"><div class="lbl">ZORA (2 syllables) 😐 — borderline ok</div><div class="bar" style="width:50%;background:#facc15"></div></div>
+    <div class="row"><div class="lbl">"ZORA WAKE" (3+ syllables) ✅ — recommend</div><div class="bar" style="width:18%;background:#4ade80"></div></div>
+  </div>
+  <p class="note">Bar = false-alarm risk (conceptual). Change: test keyword list-a revise pannunga, avlodhaan. 🆓 Free win!</p>
+</div>
+
+<!-- CHANGE 4 -->
+<div class="card">
+  <span class="tag p0">P0 — CHEAP &amp; SAFE</span>
+  <h2><span class="badge b4">4</span>Smoothing + cool-down (micro_speech pattern)</h2>
+  <p class="note">Score vs time. Oru spike vandha udane WAKE vendaam — average panni confirm pannunga, trigger-ku aprom rest kudunga.</p>
+  <svg viewBox="0 0 920 330" font-family="Segoe UI, sans-serif">
+    <text x="20" y="25" fill="#f87171" font-size="13" font-weight="700">BEFORE: raw score, spike = WAKE ❌❌❌</text>
+    <line x1="60" y1="100" x2="880" y2="100" stroke="#f87171" stroke-width="1.5" stroke-dasharray="6,4"/>
+    <text x="885" y="104" fill="#f87171" font-size="11">τ</text>
+    <polyline points="60,135 95,130 130,138 165,128 200,55 235,132 270,136 305,60 340,130 375,134 410,128 445,58 480,133 515,137 550,130 585,135 620,131 655,136 690,129 725,133 760,130 795,134 830,132 865,135" fill="none" stroke="#e6e9f2" stroke-width="2"/>
+    <g font-size="16" text-anchor="middle"><text x="200" y="48" fill="#f87171">❌</text><text x="305" y="48" fill="#f87171">❌</text><text x="445" y="48" fill="#f87171">❌</text></g>
+    <text x="20" y="185" fill="#4ade80" font-size="13" font-weight="700">AFTER: averaged + 1-2s cool-down ✅ (oru WAKE mattum)</text>
+    <rect x="430" y="200" width="220" height="90" fill="#4ade8022" stroke="#4ade8055"/>
+    <text x="540" y="280" fill="#4ade80" font-size="12" text-anchor="middle">🔇 cool-down: inga trigger illa</text>
+    <line x1="60" y1="245" x2="880" y2="245" stroke="#4ade80" stroke-width="1.5" stroke-dasharray="6,4"/>
+    <text x="885" y="249" fill="#4ade80" font-size="11">τ</text>
+    <polyline points="60,275 110,273 160,276 210,272 260,268 310,250 360,222 410,215 430,218 480,240 530,262 580,270 630,273 680,272 730,274 780,273 830,274 865,273" fill="none" stroke="#4ade80" stroke-width="2.5"/>
+    <text x="410" y="208" fill="#4ade80" font-size="16" text-anchor="middle">✅</text>
+  </svg>
+  <div class="cols">
+    <div class="before"><h3>❌ Before</h3>Spike vandha udane WAKE — burst false alarms (3 ❌ mela paarunga).</div>
+    <div class="after"><h3>✅ After</h3>250–500ms average + trigger-ku aprom 1–2s rest. Cost: latency +~100ms (parava illa, SIH metric-ku ok).</div>
+  </div>
+</div>
+
+<!-- CHANGE 5 -->
+<div class="card">
+  <span class="tag p1">P1 — EASY WIN</span>
+  <h2><span class="badge b5">5</span>Enrollment strong: K=3 → K=5 + noise-mix</h2>
+  <div class="cols">
+    <div class="before"><h3>❌ Before</h3>3 clean recordings → mean. Quiet room-la nalla, vera mic/distance-ku weak.<div class="dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div></div>
+    <div class="after"><h3>✅ After</h3>5 recordings + ovvonnum-la noise/gain/speed mix (halo = variation). Enroll time +10 sec mattum.<div class="dots"><span class="dot halo"></span><span class="dot halo"></span><span class="dot halo"></span><span class="dot halo"></span><span class="dot halo"></span></div></div>
+  </div>
+  <p class="note">Effect: yaar pesinaalum + eppadi pesinaalum catch pannum (TPR up ⬆️). Retraining vendaam. 🎤</p>
+</div>
+
+<!-- CHANGE 6 -->
+<div class="card">
+  <span class="tag p1">P1 — SMALL CODE, REAL GAIN</span>
+  <h2><span class="badge b6">6</span>Single mean-kku badhila 4-5 templates (max-match)</h2>
+  <p class="note">Embedding space sketch: green = templates, red = pudhu voice queries. Dashed circle = "idhu enakku theriyum" range.</p>
+  <svg viewBox="0 0 920 260" font-family="Segoe UI, sans-serif">
+    <text x="20" y="25" fill="#f87171" font-size="13" font-weight="700">BEFORE: 1 mean ❌ (fast voice miss!)</text>
+    <circle cx="230" cy="140" r="70" fill="none" stroke="#4ade80" stroke-width="1.5" stroke-dasharray="6,4"/>
+    <circle cx="230" cy="140" r="10" fill="#4ade80"/>
+    <text x="230" y="235" fill="#9aa3bd" font-size="12" text-anchor="middle">1 centroid, periya vague circle</text>
+    <circle cx="260" cy="110" r="7" fill="#f87171"/><text x="275" y="113" fill="#f87171" font-size="12">slow ok</text>
+    <circle cx="330" cy="170" r="7" fill="#f87171"/><text x="345" y="173" fill="#f87171" font-size="12">fast MISSED ❌</text>
+    <text x="480" y="25" fill="#4ade80" font-size="13" font-weight="700">AFTER: 4-5 templates ✅ (ella voice-um ok!)</text>
+    <g fill="none" stroke="#4ade80" stroke-width="1.5" stroke-dasharray="5,3">
+      <circle cx="590" cy="110" r="34"/><circle cx="680" cy="100" r="34"/><circle cx="630" cy="175" r="34"/><circle cx="720" cy="165" r="34"/>
+    </g>
+    <g fill="#4ade80"><circle cx="590" cy="110" r="9"/><circle cx="680" cy="100" r="9"/><circle cx="630" cy="175" r="9"/><circle cx="720" cy="165" r="9"/></g>
+    <circle cx="605" cy="120" r="6" fill="#f87171"/><circle cx="700" cy="160" r="6" fill="#f87171"/><circle cx="665" cy="95" r="6" fill="#f87171"/>
+    <text x="800" y="140" fill="#4ade80" font-size="12">ella queries-um ✅</text>
+    <text x="690" y="235" fill="#9aa3bd" font-size="12" text-anchor="middle">4 templates, tight coverage. Cost: ~128 bytes each!</text>
+  </svg>
+  <p class="note">Change: mean pannama ella recordings-um separate-a vechuka, closest match edukka (max). Fast/slow/vera-voice → TPR up ⬆️. Memory cost negligible (~0.5KB).</p>
+</div>
+
+<!-- CHANGE 7 -->
+<div class="card">
+  <span class="tag p2">P2 — LAST (RETRAIN NEEDED)</span>
+  <h2><span class="badge b7">7</span>Frontend upgrade: 13 MFCC → 40 log-mel + retrain</h2>
+  <div class="cols">
+    <div class="before"><h3>Ippo: 13 MFCC</h3><div class="stripe13"></div><p class="note">13 frequency bands — chinna picture.</p></div>
+    <div class="after"><h3>Option: 40 log-mel</h3><div class="stripe40"></div><p class="note">40 bands — rich picture, short-word confuse korayum.</p></div>
+  </div>
+  <p class="note">⚠️ Idhuku encoder <b>retrain (1-2 days)</b> + parity re-verify venum — costly. Mela ①–⑥ mudichuttu, innum gain venumna mattum. Hello Edge / OWW family ellaame richer frontend dhaan use panraanga.</p>
+</div>
+
+<!-- ROI -->
+<div class="card">
+  <h2>🏁 Seiyara order (ROI ranking)</h2>
+  <table class="roi">
+    <tr><th>Order</th><th>Change</th><th>Retrain?</th><th>Expected effect</th></tr>
+    <tr><td><b>1st</b></td><td>① Single threshold ~0.89 + shuffle-calibrate</td><td>❌ illa</td><td>FA/hr periya drop 📉📉</td></tr>
+    <tr><td><b>2nd</b></td><td>② Garbage template</td><td>❌ illa</td><td>FA/hr further drop 📉📉</td></tr>
+    <tr><td><b>3rd</b></td><td>④ Smoothing + cool-down</td><td>❌ illa</td><td>Burst FA clean 📉</td></tr>
+    <tr><td><b>4th</b></td><td>③ 3-syllable keyword</td><td>❌ illa</td><td>FA physics-aalaye down 📉 (free!)</td></tr>
+    <tr><td><b>5th</b></td><td>⑤ K=5 + augmentation enroll</td><td>❌ illa</td><td>TPR up 📈</td></tr>
+    <tr><td><b>6th</b></td><td>⑥ Multi-template max-match</td><td>❌ illa</td><td>TPR up 📈</td></tr>
+    <tr><td><b>Last</b></td><td>⑦ Frontend + retrain</td><td>✅ aamaam</td><td>Moderate gain, costly 🔵</td></tr>
+  </table>
+</div>
+
+<footer>TIME-1o-CLOCK • 7-changes visual • Projections = illustrative, measure pannanum! 📏<br><a href="track_b_visual_guide.html" style="color:#22d3ee">← main guide</a></footer>
+
+</div>
+</body>
+</html>

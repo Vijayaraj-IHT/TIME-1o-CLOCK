@@ -1,0 +1,33 @@
+{
+  "experiment": "Experiment B: Tiny CNN vs DS-CNN",
+  "timestamp": "2026-09-10T23:14:09.481800",
+  "input_shape": [
+    98,
+    13,
+    1
+  ],
+  "embedding_dim": 32,
+  "tiny_cnn": {
+    "total_parameters": 48912,
+    "trainable_parameters": 48592,
+    "non_trainable_parameters": 320,
+    "fp32_size_kb": 191.06,
+    "estimated_int8_size_kb": 47.77,
+    "inference_latency_ms_per_frame": 6.893
+  },
+  "ds_cnn": {
+    "total_parameters": 14384,
+    "trainable_parameters": 13616,
+    "non_trainable_parameters": 768,
+    "fp32_size_kb": 56.19,
+    "estimated_int8_size_kb": 14.05,
+    "inference_latency_ms_per_frame": 13.213
+  },
+  "comparison": {
+    "parameter_reduction_percent": 70.59,
+    "fp32_size_saving_kb": 134.87,
+    "int8_size_saving_kb": 33.72,
+    "latency_difference_ms": 6.32,
+    "recommendation": "DS-CNN achieves significant parameter and MAC reduction through depthwise factorization, providing optimal SRAM and Flash utilization on the ESP32-S3 microcontroller."
+  }
+}

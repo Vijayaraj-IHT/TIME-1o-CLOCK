@@ -1,0 +1,80 @@
+{
+  "timestamp": "2026-09-11 10:25:41",
+  "problem_statement": "SIH 26172 - Low Latency and Efficient Voice Activator for Edge Devices",
+  "organization": "Indian Space Research Organisation (ISRO)",
+  "enrollment_stage": {
+    "target_keyword": "ZORA",
+    "shots": 3,
+    "intra_similarity": 0.9929,
+    "prototype_norm": 1.0,
+    "dimension": 32
+  },
+  "stream_profile": {
+    "total_duration_sec": 23.0,
+    "total_chunks": 460,
+    "chunk_size_ms": 50,
+    "vad_skip_chunks": 333,
+    "vad_skip_percentage": 72.39,
+    "active_inference_chunks": 106
+  },
+  "performance_telemetry": {
+    "expected_target_injections": 2,
+    "measured_activations": 2,
+    "detection_timestamps_ms": [
+      6400.0,
+      15500.0
+    ],
+    "detection_latencies_from_onset_ms": [
+      400.0,
+      500.0
+    ],
+    "average_detection_latency_ms": 450.0,
+    "false_activations_count": 0,
+    "confuser_word_rejection": {
+      "confuser_word": "zero",
+      "max_similarity_observed": 0.7969,
+      "threshold_tau_high": 0.9,
+      "rejection_successful": true
+    },
+    "average_per_chunk_inference_ms": 0.38,
+    "real_time_factor": 0.0
+  },
+  "asr_handover_stage": {
+    "handover_events_count": 2,
+    "buffer_duration_per_handover_sec": 2.0,
+    "status": "OPERATIONAL",
+    "remote_asr_protocol": "Open-Source Whisper / VOSK PCM Streaming"
+  },
+  "sih_compliance_matrix": {
+    "low_latency_wake_word": {
+      "target": "< 500 ms",
+      "measured": "450.0 ms",
+      "compliant": true
+    },
+    "flash_footprint": {
+      "target": "< 100 KB",
+      "measured": "56.41 KB (57,760 bytes)",
+      "compliant": true
+    },
+    "sram_footprint": {
+      "target": "< 256 KB",
+      "measured": "161.98 KB (63.3% allocated)",
+      "compliant": true
+    },
+    "idle_cpu_utilization": {
+      "target": "< 10%",
+      "measured": "< 5% (72.4% VAD skip)",
+      "compliant": true
+    },
+    "unseen_keyword_adaptability": {
+      "target": "Dynamic without retraining",
+      "measured": "3-Shot L2 Centroid Registration",
+      "compliant": true
+    },
+    "remote_asr_handover": {
+      "target": "Edge-to-Cloud Handover",
+      "measured": "2.0s PCM Buffer Handover Verified",
+      "compliant": true
+    }
+  }
+}

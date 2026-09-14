@@ -1,0 +1,386 @@
+{
+  "timestamp": "2026-09-10T23:41:51.010134",
+  "milestone": "Milestone 8: Metric Learning Training Pipeline",
+  "training_configuration": {
+    "epochs": 12,
+    "steps_per_epoch": 35,
+    "classes_per_batch": 16,
+    "samples_per_class": 4,
+    "total_batch_size": 64,
+    "loss": "supervised_contrastive",
+    "temperature": 0.1,
+    "embedding_dim": 32,
+    "normalization": "L2_hypersphere"
+  },
+  "ds_cnn": {
+    "architecture": "ds_cnn",
+    "parameters": 14384,
+    "embedding_dim": 32,
+    "epochs": 12,
+    "total_time_seconds": 274.91,
+    "history": [
+      {
+        "epoch": 1,
+        "train_loss": 4.1071,
+        "duration_seconds": 4.4,
+        "val_separation_margin": 0.0,
+        "val_mean_pos_sim": 1.0,
+        "val_mean_neg_sim": 1.0,
+        "val_top1_recall": 0.0568,
+        "val_roc_auc": 0.5901,
+        "is_best": true
+      },
+      {
+        "epoch": 2,
+        "train_loss": 3.987,
+        "duration_seconds": 2.36,
+        "val_separation_margin": 0.0,
+        "val_mean_pos_sim": 1.0,
+        "val_mean_neg_sim": 1.0,
+        "val_top1_recall": 0.0568,
+        "val_roc_auc": 0.5626,
+        "is_best": false
+      },
+      {
+        "epoch": 3,
+        "train_loss": 3.9546,
+        "duration_seconds": 2.31,
+        "val_separation_margin": 0.0,
+        "val_mean_pos_sim": 1.0,
+        "val_mean_neg_sim": 1.0,
+        "val_top1_recall": 0.0622,
+        "val_roc_auc": 0.5989,
+        "is_best": false
+      },
+      {
+        "epoch": 4,
+        "train_loss": 3.8444,
+        "duration_seconds": 2.45,
+        "val_separation_margin": 0.0,
+        "val_mean_pos_sim": 1.0,
+        "val_mean_neg_sim": 1.0,
+        "val_top1_recall": 0.0622,
+        "val_roc_auc": 0.599,
+        "is_best": false
+      },
+      {
+        "epoch": 5,
+        "train_loss": 3.8443,
+        "duration_seconds": 2.36,
+        "val_separation_margin": 0.0,
+        "val_mean_pos_sim": 1.0,
+        "val_mean_neg_sim": 1.0,
+        "val_top1_recall": 0.0622,
+        "val_roc_auc": 0.6034,
+        "is_best": false
+      },
+      {
+        "epoch": 6,
+        "train_loss": 3.8196,
+        "duration_seconds": 2.47,
+        "val_separation_margin": 0.0001,
+        "val_mean_pos_sim": 0.9999,
+        "val_mean_neg_sim": 0.9998,
+        "val_top1_recall": 0.073,
+        "val_roc_auc": 0.6075,
+        "is_best": true
+      },
+      {
+        "epoch": 7,
+        "train_loss": 3.801,
+        "duration_seconds": 2.4,
+        "val_separation_margin": 0.0002,
+        "val_mean_pos_sim": 0.9998,
+        "val_mean_neg_sim": 0.9996,
+        "val_top1_recall": 0.0811,
+        "val_roc_auc": 0.6346,
+        "is_best": true
+      },
+      {
+        "epoch": 8,
+        "train_loss": 3.7507,
+        "duration_seconds": 2.36,
+        "val_separation_margin": 0.0004,
+        "val_mean_pos_sim": 0.999,
+        "val_mean_neg_sim": 0.9986,
+        "val_top1_recall": 0.0838,
+        "val_roc_auc": 0.5996,
+        "is_best": true
+      },
+      {
+        "epoch": 9,
+        "train_loss": 3.7065,
+        "duration_seconds": 2.42,
+        "val_separation_margin": 0.0017,
+        "val_mean_pos_sim": 0.9969,
+        "val_mean_neg_sim": 0.9953,
+        "val_top1_recall": 0.1108,
+        "val_roc_auc": 0.6628,
+        "is_best": true
+      },
+      {
+        "epoch": 10,
+        "train_loss": 3.6595,
+        "duration_seconds": 2.37,
+        "val_separation_margin": 0.0051,
+        "val_mean_pos_sim": 0.9933,
+        "val_mean_neg_sim": 0.9883,
+        "val_top1_recall": 0.1108,
+        "val_roc_auc": 0.6695,
+        "is_best": true
+      },
+      {
+        "epoch": 11,
+        "train_loss": 3.6387,
+        "duration_seconds": 2.46,
+        "val_separation_margin": 0.0164,
+        "val_mean_pos_sim": 0.9795,
+        "val_mean_neg_sim": 0.9631,
+        "val_top1_recall": 0.1297,
+        "val_roc_auc": 0.6749,
+        "is_best": true
+      },
+      {
+        "epoch": 12,
+        "train_loss": 3.6054,
+        "duration_seconds": 2.37,
+        "val_separation_margin": 0.0163,
+        "val_mean_pos_sim": 0.9684,
+        "val_mean_neg_sim": 0.9521,
+        "val_top1_recall": 0.1703,
+        "val_roc_auc": 0.6333,
+        "is_best": false
+      }
+    ],
+    "best_separation_margin": 0.0164,
+    "final_validation": {
+      "cosine_separation": {
+        "num_positive_pairs": 1000,
+        "num_negative_pairs": 1000,
+        "mean_positive_cosine": 0.977,
+        "std_positive_cosine": 0.0269,
+        "mean_negative_cosine": 0.9626,
+        "std_negative_cosine": 0.0352,
+        "separation_margin": 0.0144,
+        "roc_auc": 0.6542,
+        "equal_error_rate": 0.3775,
+        "eer_operating_threshold": 0.9811
+      },
+      "few_shot_retrieval": {
+        "shots_per_prototype": 3,
+        "total_enrolled_classes": 37,
+        "total_query_samples": 740,
+        "top1_recall_accuracy": 0.1041,
+        "top5_recall_accuracy": 0.3554
+      }
+    },
+    "best_checkpoint": "D:\\SIH_Model\\models\\checkpoints\\ds_cnn_metric_best.keras",
+    "final_checkpoint": "D:\\SIH_Model\\models\\checkpoints\\ds_cnn_metric_final.keras"
+  },
+  "tiny_cnn": {
+    "architecture": "tiny_cnn",
+    "parameters": 48912,
+    "embedding_dim": 32,
+    "epochs": 12,
+    "total_time_seconds": 299.14,
+    "history": [
+      {
+        "epoch": 1,
+        "train_loss": 3.9967,
+        "duration_seconds": 8.32,
+        "val_separation_margin": 0.0164,
+        "val_mean_pos_sim": 0.9823,
+        "val_mean_neg_sim": 0.9659,
+        "val_top1_recall": 0.1378,
+        "val_roc_auc": 0.6551,
+        "is_best": true
+      },
+      {
+        "epoch": 2,
+        "train_loss": 3.8756,
+        "duration_seconds": 7.31,
+        "val_separation_margin": 0.0207,
+        "val_mean_pos_sim": 0.98,
+        "val_mean_neg_sim": 0.9593,
+        "val_top1_recall": 0.1595,
+        "val_roc_auc": 0.7006,
+        "is_best": true
+      },
+      {
+        "epoch": 3,
+        "train_loss": 3.8306,
+        "duration_seconds": 9.27,
+        "val_separation_margin": 0.0235,
+        "val_mean_pos_sim": 0.9678,
+        "val_mean_neg_sim": 0.9444,
+        "val_top1_recall": 0.1649,
+        "val_roc_auc": 0.6892,
+        "is_best": true
+      },
+      {
+        "epoch": 4,
+        "train_loss": 3.8059,
+        "duration_seconds": 10.79,
+        "val_separation_margin": 0.0427,
+        "val_mean_pos_sim": 0.9566,
+        "val_mean_neg_sim": 0.9138,
+        "val_top1_recall": 0.1622,
+        "val_roc_auc": 0.7272,
+        "is_best": true
+      },
+      {
+        "epoch": 5,
+        "train_loss": 3.7772,
+        "duration_seconds": 10.97,
+        "val_separation_margin": 0.0882,
+        "val_mean_pos_sim": 0.918,
+        "val_mean_neg_sim": 0.8299,
+        "val_top1_recall": 0.1919,
+        "val_roc_auc": 0.7492,
+        "is_best": true
+      },
+      {
+        "epoch": 6,
+        "train_loss": 3.7046,
+        "duration_seconds": 10.57,
+        "val_separation_margin": 0.1061,
+        "val_mean_pos_sim": 0.9036,
+        "val_mean_neg_sim": 0.7975,
+        "val_top1_recall": 0.1973,
+        "val_roc_auc": 0.7626,
+        "is_best": true
+      },
+      {
+        "epoch": 7,
+        "train_loss": 3.6728,
+        "duration_seconds": 6.9,
+        "val_separation_margin": 0.1386,
+        "val_mean_pos_sim": 0.8816,
+        "val_mean_neg_sim": 0.7431,
+        "val_top1_recall": 0.2108,
+        "val_roc_auc": 0.7656,
+        "is_best": true
+      },
+      {
+        "epoch": 8,
+        "train_loss": 3.686,
+        "duration_seconds": 7.39,
+        "val_separation_margin": 0.1188,
+        "val_mean_pos_sim": 0.8838,
+        "val_mean_neg_sim": 0.7649,
+        "val_top1_recall": 0.2297,
+        "val_roc_auc": 0.7391,
+        "is_best": false
+      },
+      {
+        "epoch": 9,
+        "train_loss": 3.6551,
+        "duration_seconds": 10.36,
+        "val_separation_margin": 0.113,
+        "val_mean_pos_sim": 0.9294,
+        "val_mean_neg_sim": 0.8164,
+        "val_top1_recall": 0.2486,
+        "val_roc_auc": 0.8103,
+        "is_best": false
+      },
+      {
+        "epoch": 10,
+        "train_loss": 3.6198,
+        "duration_seconds": 10.83,
+        "val_separation_margin": 0.1786,
+        "val_mean_pos_sim": 0.8654,
+        "val_mean_neg_sim": 0.6868,
+        "val_top1_recall": 0.2514,
+        "val_roc_auc": 0.8159,
+        "is_best": true
+      },
+      {
+        "epoch": 11,
+        "train_loss": 3.6041,
+        "duration_seconds": 10.87,
+        "val_separation_margin": 0.1327,
+        "val_mean_pos_sim": 0.8879,
+        "val_mean_neg_sim": 0.7551,
+        "val_top1_recall": 0.2811,
+        "val_roc_auc": 0.8024,
+        "is_best": false
+      },
+      {
+        "epoch": 12,
+        "train_loss": 3.5522,
+        "duration_seconds": 6.18,
+        "val_separation_margin": 0.1786,
+        "val_mean_pos_sim": 0.8421,
+        "val_mean_neg_sim": 0.6636,
+        "val_top1_recall": 0.2838,
+        "val_roc_auc": 0.8117,
+        "is_best": false
+      }
+    ],
+    "best_separation_margin": 0.1786,
+    "final_validation": {
+      "cosine_separation": {
+        "num_positive_pairs": 1000,
+        "num_negative_pairs": 1000,
+        "mean_positive_cosine": 0.8642,
+        "std_positive_cosine": 0.1074,
+        "mean_negative_cosine": 0.685,
+        "std_negative_cosine": 0.1672,
+        "separation_margin": 0.1792,
+        "roc_auc": 0.8214,
+        "equal_error_rate": 0.263,
+        "eer_operating_threshold": 0.8145
+      },
+      "few_shot_retrieval": {
+        "shots_per_prototype": 3,
+        "total_enrolled_classes": 37,
+        "total_query_samples": 740,
+        "top1_recall_accuracy": 0.2459,
+        "top5_recall_accuracy": 0.6608
+      }
+    },
+    "best_checkpoint": "D:\\SIH_Model\\models\\checkpoints\\tiny_cnn_metric_best.keras",
+    "final_checkpoint": "D:\\SIH_Model\\models\\checkpoints\\tiny_cnn_metric_final.keras"
+  },
+  "summary": {
+    "metric": [
+      "Total Parameters",
+      "FP32 Model Size (KB)",
+      "Estimated INT8 Size (KB)",
+      "Final Training Loss",
+      "Mean Positive Cosine Sim",
+      "Mean Negative Cosine Sim",
+      "Separation Margin (Delta)",
+      "ROC-AUC",
+      "Equal Error Rate (EER)",
+      "Top-1 Recall (3-shot)",
+      "Top-5 Recall (3-shot)"
+    ],
+    "ds_cnn": [
+      "14,384",
+      "56.19 KB",
+      "14.05 KB",
+      "3.6054",
+      "0.9770",
+      "0.9626",
+      "+0.0144",
+      "0.6542",
+      "0.3775",
+      "10.41%",
+      "35.54%"
+    ],
+    "tiny_cnn": [
+      "48,912",
+      "191.06 KB",
+      "47.77 KB",
+      "3.5522",
+      "0.8642",
+      "0.6850",
+      "+0.1792",
+      "0.8214",
+      "0.2630",
+      "24.59%",
+      "66.08%"
+    ]
+  }
+}

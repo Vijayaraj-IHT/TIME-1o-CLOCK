@@ -1,0 +1,48 @@
+{
+  "timestamp": "2026-09-10T23:49:45.134547",
+  "milestone": "Milestone 10: Streaming Detector & State Machine",
+  "stream_duration_seconds": 17.0,
+  "chunk_size_ms": 50,
+  "tiny_cnn_streaming": {
+    "audio_duration_seconds": 17.0,
+    "total_chunks_processed": 340,
+    "chunks_skipped_by_vad": 188,
+    "vad_skip_percentage": 55.29,
+    "active_inference_chunks": 152,
+    "total_activations": 2,
+    "activation_events": [
+      {
+        "timestamp_ms": 8300.0,
+        "smoothed_similarity": 0.9462
+      },
+      {
+        "timestamp_ms": 13300.0,
+        "smoothed_similarity": 0.911
+      }
+    ],
+    "average_inference_latency_ms": 7.24,
+    "real_time_factor": 0.0695,
+    "detection_latencies_ms": [
+      300.0,
+      300.0
+    ],
+    "false_activations_count": 0
+  },
+  "ds_cnn_streaming": {
+    "audio_duration_seconds": 17.0,
+    "total_chunks_processed": 340,
+    "chunks_skipped_by_vad": 187,
+    "vad_skip_percentage": 55.0,
+    "active_inference_chunks": 153,
+    "total_activations": 1,
+    "activation_events": [
+      {
+        "timestamp_ms": 8500.0,
+        "smoothed_similarity": 0.9983
+      }
+    ],
+    "average_inference_latency_ms": 13.53,
+    "real_time_factor": 0.1266,
+    "false_activations_count": 0
+  }
+}

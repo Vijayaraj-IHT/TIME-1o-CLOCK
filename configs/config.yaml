@@ -1,0 +1,87 @@
+# ==============================================================================
+# SIH Problem Statement 26172: Low Latency and Efficient Voice Activator for Edge Devices
+# Organization: ISRO
+# Configuration Specification
+# ==============================================================================
+
+project:
+  name: "sih_kws_activator"
+  problem_statement: "SIH-26172-Voice-Activator-Edge-Devices"
+  organization: "ISRO"
+  root_dir: "D:/SIH_Model"
+  random_seed: 42
+
+audio:
+  sample_rate: 16000
+  channels: 1
+  clip_duration_ms: 1000
+  window_duration_ms: 30
+  hop_duration_ms: 10
+
+features:
+  type: "mfcc"             # Options: 'mfcc', 'logmel'
+  n_mfcc: 13               # Standard compact coefficient count for TinyML
+  n_mels: 40               # Mel filterbanks
+  fft_length: 512          # 32ms window at 16kHz
+  hop_length: 160          # 10ms frame advance (160 samples)
+  win_length: 480          # 30ms window (480 samples)
+
+embedding:
+  dimension: 32            # Tested: 32, 64
+  normalization: "l2"      # Enforces unit hyper-sphere projection for cosine similarity
+
+training:
+  batch_size: 64
+  epochs: 30
+  learning_rate: 0.001
+  optimizer: "adam"
+  loss: "contrastive"      # Options: 'contrastive', 'triplet', 'supervised_contrastive'
+  seed: 42
+
+dataset:
+  speech_commands_enabled: true
+  common_voice_enabled: true
+  custom_data_enabled: true
+  noise_enabled: true
+  raw_speech_commands_dir: "data/raw/speech_commands"
+  raw_common_voice_dir: "data/raw/common_voice"
+  raw_custom_dir: "data/raw/custom_keywords"
+  raw_noise_dir: "data/raw/noise"
+  processed_dir: "data/processed"
+  metadata_dir: "data/metadata"
+
+common_voice:
+  language: "en"
+  max_samples: 5000
+  max_hours: 5.0
+  version: "cv-corpus-17.0-2024-03-15"
+  source_directory: "data/raw/common_voice"
+
+enrollment:
+  samples: 3
+  allow_1_sample_test: true
+  allow_2_sample_test: true
+  allow_3_sample_test: true
+  allow_5_sample_test: true
+
+detection:
+  similarity_metric: "cosine"
+  threshold: 0.78          # Preliminary operating threshold; tuned empirically in M11
+  consecutive_windows: 3   # Confirmation persistence count
+  smoothing_window: 5      # Moving average window
+  hysteresis: 0.05         # Reset deadband (threshold - hysteresis)
+  cooldown_ms: 1500        # Re-trigger lockout period
+
+augmentation:
+  noise: true
+  time_shift: true
+  speed: true
+  gain: true
+  pitch: true
+  background_noise: true
+
+deployment:
+  quantization: "int8"
+  target: "esp32s3"
+  max_ram_kb: 256
+  max_idle_cpu_percent: 10

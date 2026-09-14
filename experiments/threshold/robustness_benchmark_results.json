@@ -1,0 +1,113 @@
+{
+  "timestamp": "2026-09-10T23:53:50.219848",
+  "milestone": "Milestone 11: False Activation Testing & Robustness Benchmark",
+  "calibrated_operating_parameters": {
+    "operating_threshold": 0.78,
+    "hysteresis_deadband": 0.05,
+    "threshold_low": 0.73,
+    "consecutive_confirmation_windows": 3,
+    "cooldown_lockout_ms": 1500,
+    "status": "FROZEN_FOR_FIRMWARE"
+  },
+  "false_activation_evaluation": {
+    "total_negative_files": 300,
+    "total_stream_seconds": 300.0,
+    "total_stream_hours": 0.0833,
+    "false_activations_count": 109,
+    "false_activation_rate_per_hour": 1308.0,
+    "vad_inference_skip_percentage": 29.32,
+    "real_time_factor": 0.1062
+  },
+  "snr_robustness_curve": {
+    "clean": {
+      "snr_db": "Clean",
+      "total_samples": 30,
+      "successful_detections": 30,
+      "tpr_percentage": 100.0,
+      "mean_detection_similarity": 0.9351
+    },
+    "20dB_snr": {
+      "snr_db": 20,
+      "total_samples": 30,
+      "successful_detections": 30,
+      "tpr_percentage": 100.0,
+      "mean_detection_similarity": 0.9324
+    },
+    "10dB_snr": {
+      "snr_db": 10,
+      "total_samples": 30,
+      "successful_detections": 30,
+      "tpr_percentage": 100.0,
+      "mean_detection_similarity": 0.9137
+    },
+    "0dB_snr": {
+      "snr_db": 0,
+      "total_samples": 30,
+      "successful_detections": 19,
+      "tpr_percentage": 63.33,
+      "mean_detection_similarity": 0.8469
+    }
+  },
+  "confuser_rejection": {
+    "zero": {
+      "total_tested": 20,
+      "false_triggers": 18,
+      "rejection_rate_pct": 10.0,
+      "peak_similarity_mean": 0.8404,
+      "peak_similarity_max": 0.9364
+    },
+    "four": {
+      "total_tested": 20,
+      "false_triggers": 11,
+      "rejection_rate_pct": 45.0,
+      "peak_similarity_mean": 0.7868,
+      "peak_similarity_max": 0.8586
+    },
+    "no": {
+      "total_tested": 20,
+      "false_triggers": 19,
+      "rejection_rate_pct": 5.0,
+      "peak_similarity_mean": 0.9057,
+      "peak_similarity_max": 0.953
+    },
+    "go": {
+      "total_tested": 20,
+      "false_triggers": 19,
+      "rejection_rate_pct": 5.0,
+      "peak_similarity_mean": 0.8946,
+      "peak_similarity_max": 0.9511
+    }
+  },
+  "threshold_sensitivity_sweep": [
+    {
+      "threshold": 0.7,
+      "hysteresis_low": 0.65,
+      "false_alarms": 33,
+      "tpr_at_20db_pct": 100.0
+    },
+    {
+      "threshold": 0.74,
+      "hysteresis_low": 0.69,
+      "false_alarms": 29,
+      "tpr_at_20db_pct": 100.0
+    },
+    {
+      "threshold": 0.78,
+      "hysteresis_low": 0.73,
+      "false_alarms": 28,
+      "tpr_at_20db_pct": 100.0
+    },
+    {
+      "threshold": 0.82,
+      "hysteresis_low": 0.77,
+      "false_alarms": 24,
+      "tpr_at_20db_pct": 100.0
+    },
+    {
+      "threshold": 0.86,
+      "hysteresis_low": 0.81,
+      "false_alarms": 16,
+      "tpr_at_20db_pct": 100.0
+    }
+  ]
+}
