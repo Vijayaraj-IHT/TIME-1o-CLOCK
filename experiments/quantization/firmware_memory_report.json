@@ -1,0 +1,34 @@
+{
+  "timestamp": "2026-09-11 00:05:00",
+  "target_hardware": {
+    "microcontroller": "Espressif ESP32-S3 (Xtensa Dual-Core 32-bit LX7)",
+    "clock_speed_mhz": 240,
+    "internal_sram_budget_kb": 256.0,
+    "flash_partition_budget_kb": 100.0
+  },
+  "flash_breakdown": {
+    "tflite_model_binary_bytes": 57760,
+    "tflite_model_binary_kb": 56.41,
+    "c_header_source_lines": 4834,
+    "flash_budget_target_kb": 100.0,
+    "flash_utilization_pct": 56.41,
+    "flash_constraint_satisfied": true
+  },
+  "sram_breakdown": {
+    "tflite_micro_tensor_arena_kb": 63.0,
+    "audio_ring_buffer_kb": 31.25,
+    "mfcc_feature_scratch_kb": 4.98,
+    "audio_window_scratch_kb": 62.5,
+    "state_machine_and_prototype_kb": 0.25,
+    "total_allocated_sram_kb": 161.98,
+    "free_sram_headroom_kb": 94.02,
+    "sram_utilization_pct": 63.27,
+    "sram_constraint_satisfied": true
+  },
+  "runtime_performance": {
+    "idle_cpu_utilization_estimate": "< 5% (VAD bypass skips > 95% of frames)",
+    "inference_duration_estimate_esp32_ms": "~18 - 25 ms (using ESP-NN SIMD)",
+    "frame_stride_ms": 50,
+    "real_time_sustainable": true
+  }
+}

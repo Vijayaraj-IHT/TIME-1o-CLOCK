@@ -1,0 +1,27 @@
+{
+  "milestone": "Milestone 6: Baseline Tiny CNN Embedding Model",
+  "timestamp": "2026-09-10T23:11:32.172860",
+  "input_shape": [
+    98,
+    13,
+    1
+  ],
+  "embedding_dim": 32,
+  "l2_normalization": true,
+  "architecture": {
+    "total_parameters": 48912,
+    "trainable_parameters": 48592,
+    "non_trainable_parameters": 320,
+    "estimated_model_size_fp32_kb": 191.06
+  },
+  "sanity_training": {
+    "num_samples": 128,
+    "num_classes": 4,
+    "batch_size": 32,
+    "epochs": 8,
+    "initial_loss": 3.3182,
+    "final_loss": 2.2661,
+    "loss_reduction_percent": 31.71,
+    "l2_norm_preserved": true
+  }
+}

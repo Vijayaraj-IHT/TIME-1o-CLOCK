@@ -1,0 +1,30 @@
+# ==============================================================================
+# SIH Problem Statement 26172: Requirements Specification
+# Target: Python 3.11+
+# ==============================================================================
+
+# Core Machine Learning & TinyML
+tensorflow>=2.15.0
+tensorflow-datasets>=4.9.2
+
+# Numerical Computation & Signal Processing
+numpy>=1.24.3
+scipy>=1.11.0
+librosa>=0.10.1
+soundfile>=0.12.1
+sounddevice>=0.4.6
+
+# Tabular Data & Visualization
+pandas>=2.0.0
+matplotlib>=3.7.0
+
+# Evaluation & Metrics
+scikit-learn>=1.3.0
+
+# Utilities & Configuration
+pyyaml>=6.0
+tqdm>=4.65.0
+requests>=2.31.0
+
+# Testing & Quality Assurance
+pytest>=7.4.0

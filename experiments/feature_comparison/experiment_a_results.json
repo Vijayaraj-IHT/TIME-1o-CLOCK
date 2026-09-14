@@ -1,0 +1,32 @@
+{
+  "experiment": "Experiment A: MFCC vs Log-Mel",
+  "timestamp": "2026-09-10T23:07:35.739396",
+  "iterations": 500,
+  "sample_rate": 16000,
+  "audio_duration_seconds": 1.0,
+  "mfcc": {
+    "output_shape": [
+      98,
+      13
+    ],
+    "coefficients": 13,
+    "memory_bytes": 5096,
+    "memory_kb": 4.98,
+    "latency_ms_per_clip": 0.833
+  },
+  "logmel": {
+    "output_shape": [
+      98,
+      40
+    ],
+    "filterbanks": 40,
+    "memory_bytes": 15680,
+    "memory_kb": 15.31,
+    "latency_ms_per_clip": 0.763
+  },
+  "comparison": {
+    "memory_reduction_percent": 67.5,
+    "latency_difference_ms": 0.07,
+    "recommended_primary_for_esp32s3": "MFCC (67.5% smaller memory footprint, reduces CNN activation memory in ESP32-S3 SRAM)"
+  }
+}
