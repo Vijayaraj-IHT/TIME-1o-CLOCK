@@ -14,3 +14,5 @@ data/
 *.wav
 # Checkpoints (keep curated ones only)
 *.log
+# Compiled binaries
+tools/verify_feature_parity/verify_parity
