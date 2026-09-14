@@ -1,0 +1,52 @@
+{
+  "title": "SIH 26172 Voice Activator - TFLite Models Package",
+  "generated_timestamp": "2026-09-10T19:41:57",
+  "models": [
+    {
+      "name": "voice_activator_int8",
+      "file": "voice_activator_int8.tflite",
+      "header": "tflite_micro_model.h",
+      "type": "Universal Metric Encoder (INT8)",
+      "size_kb": 56.41,
+      "tensor_arena_kb": 63.0,
+      "input_shape": [
+        1,
+        98,
+        13,
+        1
+      ],
+      "output_shape": [
+        1,
+        32
+      ],
+      "use_case": "Zero-retraining few-shot keyword activation. Keyword prototype is kept in RAM/header."
+    },
+    {
+      "name": "voice_activator_ds_cnn_int8",
+      "file": "voice_activator_ds_cnn_int8.tflite",
+      "type": "Depthwise-Separable CNN Encoder (INT8)",
+      "size_kb": 32.5,
+      "tensor_arena_kb": 32.0,
+      "use_case": "Extreme low-memory target devices with tight Flash restrictions."
+    },
+    {
+      "name": "voice_activator_aswin_end_to_end_int8",
+      "file": "voice_activator_aswin_end_to_end_int8.tflite",
+      "header": "tflite_micro_model_aswin_e2e.h",
+      "type": "Dedicated Single-Keyword INT8 Model (ASWIN)",
+      "size_kb": 57.84,
+      "input_shape": [
+        1,
+        98,
+        13,
+        1
+      ],
+      "output_shape": [
+        1,
+        1
+      ],
+      "enrolled_keyword": "ASWIN",
+      "use_case": "Self-contained single keyword detector. Outputs cosine similarity scalar directly."
+    }
+  ]
+}
