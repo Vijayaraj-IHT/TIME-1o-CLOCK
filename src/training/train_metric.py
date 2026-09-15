@@ -20,7 +20,9 @@ try:
 except Exception:
     pass
 
-sys.path.insert(0, r"D:\SIH_Model")
+# Repo root from this file location (portable; was a hardcoded Windows path).
+_REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+sys.path.insert(0, _REPO_ROOT)
 from src.features.mfcc import MFCCFeatureExtractor
 from src.models.tiny_cnn import build_tiny_cnn_encoder
 from src.models.ds_cnn import build_ds_cnn_encoder
@@ -80,7 +82,7 @@ class MetricTrainer:
         return loss_value
 
     def train(self, train_generator, val_validator, epochs=15, steps_per_epoch=50,
-              num_classes_per_batch=16, samples_per_class=4, checkpoint_dir=r"D:\SIH_Model\models\checkpoints"):
+              num_classes_per_batch=16, samples_per_class=4, checkpoint_dir=os.path.join(_REPO_ROOT, "models", "checkpoints")):
         os.makedirs(checkpoint_dir, exist_ok=True)
         best_model_path = os.path.join(checkpoint_dir, f"{self.architecture}_metric_best.keras")
         best_weights_path = os.path.join(checkpoint_dir, f"{self.architecture}_metric_best.weights.h5")

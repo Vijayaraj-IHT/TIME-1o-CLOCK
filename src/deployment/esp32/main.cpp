@@ -33,19 +33,25 @@
 // Configuration Constants
 constexpr size_t CHUNK_SIZE = 800; // 50 ms @ 16 kHz
 constexpr float VAD_ENERGY_THRESHOLD = 0.015f; // RMS Energy Gate
+// VAD-miss fix (Sep-14, measured on host in experiments/vad_gate/): keep
+// inferring for 10 chunks past the last speech chunk. Short-keyword
+// completion windows fall in post-word silence; without a hangover tail
+// the gate skips them and smoothing decays before persistence completes.
+// 10 covers clean + noisy streams with zero added FA on negatives.
+constexpr int VAD_HANGOVER_CHUNKS = 10; // 10 x 50ms tail after speech
 // Fix: models_manifest.json reports tensor_arena_kb=63.0 for voice_activator_int8 -
 // the previous 64KB allocation left <2% headroom (framework/graph overhead can push
 // this over on a bad day). Bumped with real safety margin.
 constexpr size_t TENSOR_ARENA_SIZE = 96 * 1024; // 96 KB Static Arena in SRAM (was 64 KB)
 
 // Fix #1: thresholds synced to configs/config.yaml -> detection block
-// (threshold=0.78, hysteresis=0.05 -> tau_low=0.73, consecutive_windows=3,
-// smoothing_window=5, cooldown_ms=1500). Previously hardcoded to 0.88/0.84/4,
+// (threshold=0.89, hysteresis=0.05 -> tau_low=0.84, consecutive_windows=4,
+// smoothing_window=8, cooldown_ms=1500). Previously hardcoded to 0.88/0.84/4,
 // which did NOT match what experiments/threshold/*.json calibrated against.
-constexpr float TAU_HIGH = 0.78f;
-constexpr float TAU_LOW = 0.73f;
-constexpr int PERSISTENCE_COUNT = 3;
-constexpr int SMOOTHING_WINDOW = 5;
+constexpr float TAU_HIGH = 0.89f;
+constexpr float TAU_LOW = 0.84f;
+constexpr int PERSISTENCE_COUNT = 4;
+constexpr int SMOOTHING_WINDOW = 8;
 constexpr uint32_t COOLDOWN_MS = 1500;
 
 // Static Memory Allocations (Zero heap allocations during streaming loop)
@@ -135,6 +141,14 @@ void setup_voice_activator() {
 
     g_input_tensor = g_interpreter->input(0);
     g_output_tensor = g_interpreter->output(0);
+    // Cold-start fix (Sep-14, mirrors host demo_pipeline): pre-fill the ring
+    // with silence so is_full() holds from the first chunk -- a keyword in
+    // the first second previously never reached inference. Zero windows sit
+    // below the VAD gate, so boot stays silent.
+    {
+        int16_t silence[800] = {};
+        for (int i = 0; i < 20; ++i) g_ring_buffer.push(silence, 800);
+    }
     g_system_ready = true;
 
     printf("[INFO] System ready. Listening for keyword '%s'...\n", ENROLLED_KEYWORD_NAME);
@@ -159,10 +173,31 @@ void process_audio_chunk(const int16_t* pcm_chunk, size_t chunk_len, uint32_t cu
     static float s_audio_window[16000];
     g_ring_buffer.read_window(s_audio_window, 16000);
 
-    // 3. Short-Time RMS Energy VAD Gating
+    // 3. Short-Time RMS Energy VAD Gating (+ hangover tail -- see constexpr).
+    // Host-mirror semantics: speech reloads the counter; each silent chunk
+    // with counter > 0 still runs inference, then the counter decays.
+    static int s_vad_hangover = 0;
     float rms = compute_rms_energy(s_audio_window + (16000 - chunk_len), chunk_len);
-    if (rms < VAD_ENERGY_THRESHOLD) {
-        // Ambient silence/noise: skip CNN inference to keep idle CPU < 10%
+    bool vad_speech = (rms >= VAD_ENERGY_THRESHOLD);
+    if (vad_speech) {
+        s_vad_hangover = VAD_HANGOVER_CHUNKS;
+    } else if (s_vad_hangover > 0) {
+        --s_vad_hangover;
+        vad_speech = true;  // tail of a recent speech burst: still infer
+    }
+    if (!vad_speech) {
+        // Ambient silence/noise: skip CNN inference to keep idle CPU < 10%,
+        // but still advance the state machine as UNOBSERVED (Change 3a):
+        // decay smoothing, no background learning. Same as Python.
+        // Change 3d: persistence can complete ON this silence frame (decay
+        // edge still above tau_low). Check the return: a missed wake here
+        // would be a SILENT miss (keyword-END trigger with ideal latency).
+        bool activated_on_silence = g_state_machine.update(0.0f, current_time_ms, false);
+        if (activated_on_silence) {
+            printf(">>> [ACTIVATION EVENT] Target Keyword '%s' Detected on silence frame! (Time: %lu ms)\n",
+                   ENROLLED_KEYWORD_NAME, current_time_ms);
+            // Trigger GPIO Interrupt / Handover subsequent audio to Remote ASR
+        }
         return;
     }
 
@@ -202,12 +237,18 @@ void process_audio_chunk(const int16_t* pcm_chunk, size_t chunk_len, uint32_t cu
         memcpy(current_embedding, g_output_tensor->data.f, sizeof(current_embedding));
     }
 
-    // 8. Compute Cosine Similarity with Enrolled Keyword Prototype
-    float raw_similarity = compute_cosine_similarity(
+    // 8. Cosine similarity vs keyword + garbage veto (Phase-1 Change 2)
+    float kw_similarity = compute_cosine_similarity(
         current_embedding,
         ENROLLED_KEYWORD_PROTOTYPE,
         EMBEDDING_DIMENSION
     );
+    float gb_similarity = compute_cosine_similarity(
+        current_embedding,
+        GARBAGE_PROTOTYPE,
+        EMBEDDING_DIMENSION
+    );
+    float raw_similarity = ((kw_similarity - gb_similarity) < GARBAGE_MARGIN) ? -1.0f : kw_similarity;
 
     // 9. Update Hysteresis State Machine
     bool activated = g_state_machine.update(raw_similarity, current_time_ms);

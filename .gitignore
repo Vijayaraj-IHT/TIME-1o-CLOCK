@@ -9,9 +9,9 @@ venv/
 .DS_Store
 .vscode/
 .idea/
-# Local data (large, regenerable)
-data/
-*.wav
+# Local datasets (large, regenerable) - ROOT data/ ONLY (leading slash!).
+# NOTE: bare `data/` would also match src/data/ source code at snapshot time.
+/data/
 # Checkpoints (keep curated ones only)
 *.log
 # Compiled binaries

@@ -16,9 +16,11 @@ from typing import Optional
 import numpy as np
 import soundfile as sf
 
-sys.path.insert(0, r"D:\SIH_Model")
+# Repo root from this file location (portable; was a hardcoded Windows path).
+_REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+sys.path.insert(0, _REPO_ROOT)
 from src.features.mfcc import MFCCFeatureExtractor
-from src.models.prototype import compute_prototype, compute_cosine_similarity
+from src.models.prototype import compute_prototype, compute_cosine_similarity, compute_garbage_prototype
 
 class KeywordEnrollmentManager:
     # Fix: enroll() computed intra_similarity_min but never acted on it. A judge/user
@@ -53,7 +55,7 @@ class KeywordEnrollmentManager:
             audio = audio.mean(axis=1)  # Fix: was channel-0-only downmix, silently dropped other channels
         return self.extract_embedding_from_audio(audio)
 
-    def enroll(self, audio_inputs, keyword_name="ZORA") -> dict:
+    def enroll(self, audio_inputs, keyword_name="ZORA", negative_inputs=None) -> dict:
         """
         Enrolls target keyword using K spoken utterances.
         audio_inputs: List of filepaths or list of numpy audio arrays.
@@ -100,11 +102,28 @@ class KeywordEnrollmentManager:
                 f"re-record before exporting this prototype to firmware."
             )
 
+        # Phase-1 Change 2: optional garbage prototype from negatives
+        garbage_prototype = None
+        garbage_n = 0
+        if negative_inputs:
+            neg_embs = []
+            for inp in negative_inputs:
+                if isinstance(inp, str):
+                    neg_embs.append(self.extract_embedding_from_file(inp))
+                elif isinstance(inp, np.ndarray):
+                    neg_embs.append(self.extract_embedding_from_audio(inp))
+                else:
+                    raise ValueError("Expected str filepath or np.ndarray audio")
+            garbage_prototype = compute_garbage_prototype(np.array(neg_embs, dtype=np.float32))
+            garbage_n = len(neg_embs)
+
         return {
             "keyword_name": keyword_name.upper(),
             "k_shots": k_shots,
             "prototype": prototype,
             "embeddings": embeddings,
+            "garbage_prototype": garbage_prototype,
+            "garbage_n": garbage_n,
             "intra_similarity_mean": round(intra_mean, 4),
             "intra_similarity_min": round(intra_min, 4),
             "intra_similarity_std": round(intra_std, 4),
@@ -113,8 +132,9 @@ class KeywordEnrollmentManager:
         }
 
     def export_prototype_c_header(self, prototype: np.ndarray, keyword_name="ZORA",
-                                  output_filepath=r"D:\SIH_Model\src\deployment\esp32\keyword_prototype.h",
-                                  is_valid: Optional[bool] = None, force: bool = False):
+                                  output_filepath=os.path.join(_REPO_ROOT, "src", "deployment", "esp32", "keyword_prototype.h"),
+                                  is_valid: Optional[bool] = None, force: bool = False,
+                                  garbage: Optional[np.ndarray] = None):
         """
         Exports the prototype array to a C header file for ESP32-S3 firmware.
 
@@ -133,6 +153,12 @@ class KeywordEnrollmentManager:
         os.makedirs(os.path.dirname(output_filepath), exist_ok=True)
         dim = len(prototype)
         proto_vals = ", ".join([f"{v:.7f}f" for v in prototype])
+        if garbage is None:
+            garbage_vals = ", ".join(["0.0000000f"] * dim)
+        else:
+            g = np.asarray(garbage, dtype=np.float32).flatten()
+            assert len(g) == dim, "garbage embedding dim mismatch"
+            garbage_vals = ", ".join([f"{v:.7f}f" for v in g])
 
         header_content = f"""/*
  * Auto-generated Keyword Prototype Header for ESP32-S3
@@ -151,6 +177,13 @@ class KeywordEnrollmentManager:
 // L2-normalized prototype vector centroid
 static const float ENROLLED_KEYWORD_PROTOTYPE[{dim}] = {{
     {proto_vals}
+}};
+
+// Phase-1 Change 2: garbage (non-keyword) prototype + veto margin.
+// All-zeros = veto disabled (dot = 0, veto only fires below margin anyway).
+#define GARBAGE_MARGIN 0.05f
+static const float GARBAGE_PROTOTYPE[{dim}] = {{
+    {garbage_vals}
 }};
 
 #endif // KEYWORD_PROTOTYPE_H_

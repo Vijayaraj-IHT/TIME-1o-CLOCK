@@ -41,3 +41,39 @@ def compute_cosine_similarity(prototype: np.ndarray, query: np.ndarray) -> float
     q = query.flatten()
     sim = float(np.dot(p, q))
     return max(min(sim, 1.0), -1.0)
+
+
+# --- Phase-1 Change 2: garbage / background prototype (D-ProtoNets + Sphinx garbage loop) ---
+
+GARBAGE_MARGIN_DEFAULT = 0.05
+
+
+def compute_garbage_prototype(neg_embeddings: np.ndarray, min_count: int = 3) -> np.ndarray:
+    """
+    Builds the 'non-keyword' prototype from background/confuser/silence embeddings.
+    Same math as compute_prototype (L2-normalized mean) but requires >= min_count
+    samples: a garbage model from 1-2 clips is unstable and vetoes erratically.
+    """
+    neg_embeddings = np.asarray(neg_embeddings, dtype=np.float32)
+    if neg_embeddings.ndim == 1:
+        neg_embeddings = neg_embeddings[np.newaxis, :]
+    if neg_embeddings.shape[0] < min_count:
+        raise ValueError(
+            f"compute_garbage_prototype: need >= {min_count} negative embeddings, "
+            f"got {neg_embeddings.shape[0]}. Collect more background/confuser clips."
+        )
+    return compute_prototype(neg_embeddings)
+
+
+def apply_garbage_veto(s_kw: float, s_gb: float, margin: float = GARBAGE_MARGIN_DEFAULT):
+    """
+    Open-set rejection rule. Returns (score, vetoed).
+    Veto fires when the keyword fails to beat garbage by `margin` (strict <).
+    Vetoed score is -1.0 (below any tau_low) so smoothing decays immediately.
+    Callers pass garbage=None through as 'no veto' (legacy behavior).
+    """
+    s_kw = float(s_kw)
+    s_gb = float(s_gb)
+    if (s_kw - s_gb) < float(margin):
+        return -1.0, True
+    return s_kw, False

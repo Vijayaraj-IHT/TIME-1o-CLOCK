@@ -15,12 +15,14 @@ import pandas as pd
 import soundfile as sf
 from sklearn.metrics import roc_curve, auc
 
-sys.path.insert(0, r"D:\SIH_Model")
+# Repo root from this file location (portable; was a hardcoded Windows path).
+_REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+sys.path.insert(0, _REPO_ROOT)
 from src.features.mfcc import MFCCFeatureExtractor
 from src.models.prototype import compute_prototype, compute_cosine_similarity
 
 class MetricValidator:
-    def __init__(self, encoder, val_manifest_path=r"D:\SIH_Model\data\metadata\validation_manifest.csv",
+    def __init__(self, encoder, val_manifest_path=os.path.join(_REPO_ROOT, "data", "metadata", "validation_manifest.csv"),
                  feature_extractor=None, seed=42):
         self.encoder = encoder
         self.val_manifest_path = val_manifest_path

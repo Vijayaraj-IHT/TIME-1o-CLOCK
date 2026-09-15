@@ -1,0 +1,84 @@
+{
+  "band": 8,
+  "template_frames": 98,
+  "dtw_threshold_per_step": 77.27926266906658,
+  "separation": "separable (pilot)",
+  "isolated": {
+    "z2-heldout": {
+      "dtw_per_step": 2.533953086125862,
+      "lb_per_step": 0.4700682595421395,
+      "neural_cosine": 0.9898106455802917
+    },
+    "silence": {
+      "dtw_per_step": 152.02457225200732,
+      "lb_per_step": 39.75896513073874,
+      "neural_cosine": 0.7097124457359314
+    },
+    "noise": {
+      "dtw_per_step": 197.48207680579657,
+      "lb_per_step": 129.04392932318942,
+      "neural_cosine": 0.34922242164611816
+    },
+    "tone": {
+      "dtw_per_step": 187.6447722079026,
+      "lb_per_step": 86.66105918299368,
+      "neural_cosine": 0.6494230031967163
+    }
+  },
+  "stream": {
+    "dtw_triggers": [
+      {
+        "timestamp_ms": 1330.0,
+        "cost_per_step": 70.046
+      },
+      {
+        "timestamp_ms": 2840.0,
+        "cost_per_step": 1.4969
+      }
+    ],
+    "neural_triggers": [
+      {
+        "timestamp_ms": 1650.0,
+        "smoothed_sim": 0.9844
+      }
+    ],
+    "dtw_threshold_sweep": {
+      "2.6": [
+        1360.0,
+        2870.0
+      ],
+      "2.8": [
+        1360.0,
+        2870.0
+      ],
+      "3.0": [
+        1360.0,
+        2870.0
+      ],
+      "3.5": [
+        1360.0,
+        2870.0
+      ],
+      "4.0": [
+        1360.0,
+        2870.0
+      ],
+      "8.0": [
+        1360.0,
+        2870.0
+      ],
+      "77.28": [
+        1330.0,
+        2840.0
+      ]
+    }
+  },
+  "edge_cost": {
+    "dtw_flash_per_keyword_bytes": 5096,
+    "dtw_ram_streaming_bytes": 1188,
+    "dtw_flops_per_10ms_frame": 4214,
+    "neural_model_flash_bytes": 64512,
+    "neural_arena_ram_bytes": 98304,
+    "note": "MFCC frontend shared by both paths; neural inference flops are device-timed (see quantization bench), not estimated here."
+  }
+}

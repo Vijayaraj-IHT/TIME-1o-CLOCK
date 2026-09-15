@@ -23,8 +23,11 @@ import sounddevice as sd
 import scipy.signal
 import tensorflow as tf
 
-sys.path.insert(0, r"D:\SIH_Model")
+# Repo root from this file location (portable; was a hardcoded Windows path).
+_REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.insert(0, _REPO_ROOT)
 from src.features.mfcc import MFCCFeatureExtractor
+from src.models.tflite_quant import quantize_input, dequantize_output, io_quant_params
 
 
 def trim_and_center_audio(audio: np.ndarray, sr: int = 16000, target_len: int = 16000):
@@ -78,7 +81,7 @@ def trim_and_center_audio(audio: np.ndarray, sr: int = 16000, target_len: int = 
 
 def purge_old_keyword_data(target_keyword: str):
     """Purges old keyword directories and artifacts to guarantee zero directory pollution."""
-    base_dir = r"D:\SIH_Model"
+    base_dir = _REPO_ROOT
     custom_kw_root = os.path.join(base_dir, "data", "raw", "custom_keywords")
     
     print("\n[PURGE] Purging previous custom keyword directories...")
@@ -94,10 +97,10 @@ def purge_old_keyword_data(target_keyword: str):
                     print(f"  ! Warning: could not delete {item_path}: {e}")
 
     # Remove old prototype headers to ensure fresh generation
+    # (Step-0: outputs/esp32_wroom/ stale snapshot deleted; src/ trees are canonical)
     for header in [
         os.path.join(base_dir, "src", "deployment", "esp32", "keyword_prototype.h"),
         os.path.join(base_dir, "src", "deployment", "esp32_wroom", "keyword_prototype.h"),
-        os.path.join(base_dir, "outputs", "esp32_wroom", "keyword_prototype.h")
     ]:
         if os.path.exists(header):
             try:
@@ -214,8 +217,8 @@ def synthesize_samples(keyword: str, output_dir: str, num_samples: int = 3, targ
 def extract_and_validate_prototype(
     keyword_name: str,
     audio_files: list,
-    model_path: str = r"D:\SIH_Model\models\tflite\voice_activator_int8.tflite",
-    output_header: str = r"D:\SIH_Model\src\deployment\esp32\keyword_prototype.h"
+    model_path: str = os.path.join(_REPO_ROOT, "models", "tflite", "voice_activator_int8.tflite"),
+    output_header: str = os.path.join(_REPO_ROOT, "src", "deployment", "esp32", "keyword_prototype.h")
 ) -> dict:
     """Extracts 32-D embeddings, validates against degeneracy, and writes headers."""
     feature_extractor = MFCCFeatureExtractor(sample_rate=16000, n_mfcc=13)
@@ -224,6 +227,9 @@ def extract_and_validate_prototype(
     in_idx = interpreter.get_input_details()[0]["index"]
     out_idx = interpreter.get_output_details()[0]["index"]
     in_dtype = interpreter.get_input_details()[0]["dtype"]
+    # Change 3c: quantization-aware I/O (pass-through for float32 models).
+    _, _, _in_scale, _in_zp = io_quant_params(interpreter.get_input_details()[0])
+    _, _, _out_scale, _out_zp = io_quant_params(interpreter.get_output_details()[0])
 
     def embed_audio(audio: np.ndarray) -> np.ndarray:
         if len(audio) < 16000:
@@ -231,10 +237,10 @@ def extract_and_validate_prototype(
         else:
             audio = audio[:16000]
         mfcc = feature_extractor.extract(audio)
-        tensor = np.expand_dims(np.expand_dims(mfcc, axis=0), axis=-1).astype(in_dtype)
+        tensor = quantize_input(np.expand_dims(np.expand_dims(mfcc, axis=0), axis=-1), _in_scale, _in_zp, in_dtype)
         interpreter.set_tensor(in_idx, tensor)
         interpreter.invoke()
-        emb = interpreter.get_tensor(out_idx)[0]
+        emb = dequantize_output(interpreter.get_tensor(out_idx)[0], _out_scale, _out_zp)
         norm = np.linalg.norm(emb)
         return emb / (norm + 1e-9)
 
@@ -271,7 +277,8 @@ def extract_and_validate_prototype(
 
     # Check against sample reference speech words if available
     ref_sims = []
-    sc_dir = r"D:\SIH_Model\data\raw\speech_commands"
+    ref_embs = []
+    sc_dir = os.path.join(_REPO_ROOT, "data", "raw", "speech_commands")
     if os.path.exists(sc_dir):
         for ref_w in ["stop", "go", "marvin"]:
             rw_dir = os.path.join(sc_dir, ref_w)
@@ -279,7 +286,9 @@ def extract_and_validate_prototype(
                 rf = [os.path.join(rw_dir, f) for f in os.listdir(rw_dir) if f.endswith(".wav")]
                 if rf:
                     ref_audio, _ = sf.read(rf[0])
-                    ref_sims.append(float(np.dot(centroid, embed_audio(ref_audio))))
+                    ref_emb = embed_audio(ref_audio)
+                    ref_embs.append(ref_emb)
+                    ref_sims.append(float(np.dot(centroid, ref_emb)))
     avg_ref_sim = float(np.mean(ref_sims)) if ref_sims else 0.50
 
     print("\n" + "=" * 75)
@@ -298,8 +307,18 @@ def extract_and_validate_prototype(
     if sim_silence > 0.72:
         print("[!] Warning: Prototype has elevated correlation with silence. Speaking louder will improve separation.")
 
+    # 3b. Garbage prototype (Change 2) from silence + noise + ref-word embeddings.
+    # Minimum 3 samples for stability; top up with fresh noise embeddings if needed.
+    gb_cands = [silence_emb, noise_emb] + ref_embs
+    while len(gb_cands) < 3:
+        gb_cands.append(embed_audio(np.random.uniform(-0.02, 0.02, 16000).astype(np.float32)))
+    gb_mean = np.mean(np.array(gb_cands), axis=0)
+    garbage = gb_mean / (np.linalg.norm(gb_mean) + 1e-9)
+    print(f"  - Garbage Prototype:       n={len(gb_cands)} (silence+noise+refs)")
+
     # 4. Write C++ Headers
     proto_c_str = ", ".join([f"{v:.7f}f" for v in centroid])
+    garbage_c_str = ", ".join([f"{v:.7f}f" for v in garbage])
     header_content = f"""/*
  * Auto-generated Keyword Prototype Header
  * SIH Problem Statement 26172
@@ -321,6 +340,12 @@ static const float KEYWORD_PROTOTYPE[KEYWORD_PROTOTYPE_DIM] = {{
     {proto_c_str}
 }};
 
+// Phase-1 Change 2: garbage (non-keyword) prototype + veto margin.
+#define GARBAGE_MARGIN 0.05f
+static const float GARBAGE_PROTOTYPE[KEYWORD_PROTOTYPE_DIM] = {{
+    {garbage_c_str}
+}};
+
 #endif // KEYWORD_PROTOTYPE_H_
 """
     # Write to primary target
@@ -332,7 +357,6 @@ static const float KEYWORD_PROTOTYPE[KEYWORD_PROTOTYPE_DIM] = {{
     # Auto-sync to all ESP32 deployment targets
     base_proj_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
     for wroom_dir in [
-        os.path.join(base_proj_dir, 'outputs', 'esp32_wroom'),
         os.path.join(base_proj_dir, 'src', 'deployment', 'esp32_wroom')
     ]:
         if os.path.exists(wroom_dir):
@@ -347,6 +371,7 @@ static const float KEYWORD_PROTOTYPE[KEYWORD_PROTOTYPE_DIM] = {{
         "intra_similarity": round(intra_sim, 4),
         "silence_similarity": round(sim_silence, 4),
         "noise_similarity": round(sim_noise, 4),
+        "garbage_n": len(gb_cands),
         "prototype": centroid,
         "header_path": output_header
     }
@@ -368,7 +393,7 @@ def main():
     if not args.no_purge:
         purge_old_keyword_data(target_keyword=kw)
 
-    target_dir = os.path.join(r"D:\SIH_Model\data\raw\custom_keywords", kw.lower())
+    target_dir = os.path.join(os.path.join(_REPO_ROOT, "data", "raw", "custom_keywords"), kw.lower())
     os.makedirs(target_dir, exist_ok=True)
 
     # Step 2: Acquire samples

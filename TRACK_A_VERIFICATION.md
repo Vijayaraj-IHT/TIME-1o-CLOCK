@@ -79,3 +79,33 @@ second model variant are also added.
   scoped exactly to the two named blockers, not a general cleanup sweep.
 - Track B (dataset → templates → Python DTW prototype → quantitative comparison) has not
   been started; this was the reason the two tracks were split.
+
+## Sparse follow-up (Sep-14): dense 40x257 table -> run encoding
+
+Implemented the Flash optimization flagged above. `scripts/export_mel_filterbank.py`
+is now the single source of truth: it computes `librosa.filters.mel()` with the
+exact training parameters, verifies the committed bytes against it (drift guard),
+and emits the sparse header (re-parse verified on every run).
+
+| | Dense (before) | Sparse (after) |
+|---|---|---|
+| Flash | 41,120 B | **1,108 B** (247x4 values + 40x3 uint8 headers; `sizeof`-proven) |
+| Saving | — | **97.3%** |
+| Mult-adds / frame | 10,280 | **247** (~42x fewer) |
+| Header source | 176 KB | 7.6 KB |
+
+Correctness (measured, not assumed):
+- Sparse-vs-dense firmware binaries on identical input: **bit-identical
+  (0.000e+00)** on tones, white noise, AND real zora speech. (Skipping exact
+  zeros is not an approximation: `x + 0.0 == x` in IEEE754 for finite `x`.)
+- Python-parity gate re-run on the sparse build: multitone 2.29e-05,
+  white 1.14e-05, real-zora 3.05e-05 max abs — same float-rounding grade as
+  the dense era (1.91e-05 / 1.53e-05). The gate is now committed and
+  reproducible: `python tools/verify_feature_parity/check_parity.py`.
+- `tests/test_mel_sparse.py` (5 tests): committed bytes == librosa truth,
+  exact float32 round-trips, uint8 ranges, Flash budget.
+
+*Update Sep-14: the three "not touched here" leftovers above are now resolved
+under Phase-1 Change ③ (see docs/PHASE1_CHANGES.md): VAD-silence feeds the
+state machine as UNOBSERVED (③a), cooldown/activation/gap clears history (③b),
+and all hardcoded paths are portable (Step-0). Track B still not started.*

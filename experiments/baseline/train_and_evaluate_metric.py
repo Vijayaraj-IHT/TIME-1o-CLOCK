@@ -14,7 +14,9 @@ from datetime import datetime
 import numpy as np
 import tensorflow as tf
 
-sys.path.insert(0, r"D:\SIH_Model")
+# Repo root from this file location (portable; was a hardcoded Windows path).
+_REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+sys.path.insert(0, _REPO_ROOT)
 from src.features.mfcc import MFCCFeatureExtractor
 from src.data.augment import AudioAugmenter
 from src.training.batch_generator import MetricLearningBatchGenerator
@@ -27,10 +29,10 @@ def run_metric_training_experiment():
     print("Zero-Speaker-Leakage Speech Embedding Optimization for Edge Voice Activator")
     print("="*80)
 
-    train_manifest = r"D:\SIH_Model\data\metadata\train_manifest.csv"
-    val_manifest = r"D:\SIH_Model\data\metadata\validation_manifest.csv"
-    checkpoint_dir = r"D:\SIH_Model\models\checkpoints"
-    results_dir = r"D:\SIH_Model\experiments\baseline"
+    train_manifest = os.path.join(_REPO_ROOT, "data", "metadata", "train_manifest.csv")
+    val_manifest = os.path.join(_REPO_ROOT, "data", "metadata", "validation_manifest.csv")
+    checkpoint_dir = os.path.join(_REPO_ROOT, "models", "checkpoints")
+    results_dir = os.path.join(_REPO_ROOT, "experiments", "baseline")
     os.makedirs(checkpoint_dir, exist_ok=True)
     os.makedirs(results_dir, exist_ok=True)
 

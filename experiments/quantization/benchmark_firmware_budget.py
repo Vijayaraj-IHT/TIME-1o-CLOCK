@@ -11,7 +11,9 @@ import sys
 import json
 import numpy as np
 
-sys.path.insert(0, r"D:\SIH_Model")
+# Repo root from this file location (portable; was a hardcoded Windows path).
+_REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+sys.path.insert(0, _REPO_ROOT)
 from src.export.tflite_to_c_array import estimate_tensor_arena_size
 
 
@@ -21,10 +23,10 @@ def main():
     print("=" * 80)
 
     # 1. File paths
-    model_tflite_path = r"D:\SIH_Model\models\tflite\voice_activator_int8.tflite"
-    c_header_path = r"D:\SIH_Model\src\deployment\esp32\tflite_micro_model.h"
-    proto_header_path = r"D:\SIH_Model\src\deployment\esp32\keyword_prototype.h"
-    report_path = r"D:\SIH_Model\experiments\quantization\firmware_memory_report.json"
+    model_tflite_path = os.path.join(_REPO_ROOT, "models", "tflite", "voice_activator_int8.tflite")
+    c_header_path = os.path.join(_REPO_ROOT, "src", "deployment", "esp32", "tflite_micro_model.h")
+    proto_header_path = os.path.join(_REPO_ROOT, "src", "deployment", "esp32", "keyword_prototype.h")
+    report_path = os.path.join(_REPO_ROOT, "experiments", "quantization", "firmware_memory_report.json")
 
     # 2. Flash Memory Measurement
     model_size_bytes = os.path.getsize(model_tflite_path)

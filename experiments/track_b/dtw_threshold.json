@@ -1,0 +1,81 @@
+{
+  "kw_dir": "/home/user/TIME-1o-CLOCK/data/raw/custom_keywords/zora",
+  "neg_source": "synthetic (silence/noise/tone)",
+  "band": 8,
+  "template_frames": 98,
+  "kw_scores": [
+    {
+      "clip": "zora_david_rate+0_var0.wav",
+      "cost_per_step": 1.9793030433950147
+    },
+    {
+      "clip": "zora_david_rate+0_var1.wav",
+      "cost_per_step": 2.059335809575036
+    },
+    {
+      "clip": "zora_david_rate+1_var0.wav",
+      "cost_per_step": 2.533953086125862
+    }
+  ],
+  "neg_scores": [
+    {
+      "clip": "synth_silence",
+      "cost_per_step": 141.32087501092266
+    },
+    {
+      "clip": "synth_noise",
+      "cost_per_step": 191.63607088529554
+    },
+    {
+      "clip": "synth_tone",
+      "cost_per_step": 178.3761086913382
+    }
+  ],
+  "separable": true,
+  "kw_max": 2.533953086125862,
+  "neg_min": 141.32087501092266,
+  "eer": {
+    "threshold": 71.92741404852426,
+    "tpr": 1.0,
+    "fpr": 0.0,
+    "eer_rate": 0.0
+  },
+  "suggested_threshold": 71.92741404852426,
+  "sweep": [
+    {
+      "threshold": 0.9896515216975074,
+      "tpr": 0.0,
+      "fpr": 0.0
+    },
+    {
+      "threshold": 2.0193194264850254,
+      "tpr": 0.3333333333333333,
+      "fpr": 0.0
+    },
+    {
+      "threshold": 2.296644447850449,
+      "tpr": 0.6666666666666666,
+      "fpr": 0.0
+    },
+    {
+      "threshold": 71.92741404852426,
+      "tpr": 1.0,
+      "fpr": 0.0
+    },
+    {
+      "threshold": 159.84849185113043,
+      "tpr": 1.0,
+      "fpr": 0.3333333333333333
+    },
+    {
+      "threshold": 185.00608978831687,
+      "tpr": 1.0,
+      "fpr": 0.6666666666666666
+    },
+    {
+      "threshold": 383.2721417705911,
+      "tpr": 1.0,
+      "fpr": 1.0
+    }
+  ]
+}

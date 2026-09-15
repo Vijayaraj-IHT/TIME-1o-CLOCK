@@ -44,6 +44,11 @@
 constexpr size_t SAMPLE_RATE = 16000;
 constexpr size_t CHUNK_SIZE = 800;              // 50 ms @ 16 kHz (800 samples)
 constexpr float VAD_ENERGY_THRESHOLD = 0.012f;  // RMS Gate to skip CNN on silence
+// VAD-miss fix (Sep-14, measured on host in experiments/vad_gate/): keep
+// inferring for 10 chunks past the last speech chunk -- short-keyword
+// completion windows fall in post-word silence. 10 covers clean + noisy
+// streams with zero added FA on negatives.
+constexpr int VAD_HANGOVER_CHUNKS = 10;  // 10 x 50ms tail after speech
 constexpr size_t TENSOR_ARENA_SIZE = 64 * 1024; // 64 KB Static Arena in SRAM
 
 // Static Memory Allocations in SRAM (Zero dynamic heap allocations during loop)
@@ -52,8 +57,8 @@ static AudioRingBuffer g_ring_buffer;
 static EdgeMFCCExtractor g_mfcc_extractor;
 // Fix: was (0.82f, 0.78f, 3, 4, 1500) - a THIRD distinct operating point, different
 // from both esp32/main.cpp's old value and configs/config.yaml. Synced to config.yaml:
-// threshold=0.78, hysteresis=0.05 -> tau_low=0.73, consecutive_windows=3, smoothing_window=5.
-static ActivatorStateMachine g_state_machine(0.78f, 0.73f, 3, 5, 1500);
+// threshold=0.89, hysteresis=0.05 -> tau_low=0.84, consecutive_windows=4, smoothing_window=8.
+static ActivatorStateMachine g_state_machine(0.89f, 0.84f, 4, 8, 1500);
 static bool g_system_ready = false; // Fix: gates processing until AllocateTensors() succeeds.
 
 // Active Keyword Prototype Vector (32-D)
@@ -378,6 +383,14 @@ void setup_tflite_micro() {
 
     g_input_tensor = g_interpreter->input(0);
     g_output_tensor = g_interpreter->output(0);
+    // Cold-start fix (Sep-14, mirrors host demo_pipeline): pre-fill the ring
+    // with silence so is_full() holds from the first chunk -- a keyword in
+    // the first second previously never reached inference. Zero windows sit
+    // below the VAD gate, so boot stays silent.
+    {
+        int16_t silence[800] = {};
+        for (int i = 0; i < 20; ++i) g_ring_buffer.push(silence, 800);
+    }
     g_system_ready = true;
 
     Serial.printf("[INFO] System ready. Listening for keyword '%s'...\n", g_active_keyword_name);
@@ -396,9 +409,28 @@ void process_audio_chunk(const int16_t* pcm_chunk, size_t chunk_len, uint32_t cu
     static float s_audio_window[16000];
     g_ring_buffer.read_window(s_audio_window, 16000);
 
-    // VAD Gate
+    // VAD Gate (+ hangover tail -- see VAD_HANGOVER_CHUNKS; host-mirror
+    // semantics: speech reloads the counter, silent tail chunks still infer).
+    static int s_vad_hangover = 0;
     float rms = compute_rms_energy(s_audio_window + (16000 - chunk_len), chunk_len);
-    if (rms < VAD_ENERGY_THRESHOLD) return;
+    bool vad_speech = (rms >= VAD_ENERGY_THRESHOLD);
+    if (vad_speech) {
+        s_vad_hangover = VAD_HANGOVER_CHUNKS;
+    } else if (s_vad_hangover > 0) {
+        --s_vad_hangover;
+        vad_speech = true;  // tail of a recent speech burst: still infer
+    }
+    if (!vad_speech) {
+        // Change 3a: VAD silence still advances the state machine as
+        // UNOBSERVED (decay smoothing, no background learning). Same as Python.
+        // Change 3d: persistence can complete ON this silence frame -- check
+        // the return or a keyword-END trigger is silently missed on-device.
+        bool activated_on_silence = g_state_machine.update(0.0f, current_time_ms, false);
+        if (activated_on_silence) {
+            Serial.printf("\n>>> [ACTIVATION EVENT] Target Keyword '%s' Detected on silence frame!\n", g_active_keyword_name);
+        }
+        return;
+    }
 
     uint32_t t_start = millis();
 
@@ -406,12 +438,19 @@ void process_audio_chunk(const int16_t* pcm_chunk, size_t chunk_len, uint32_t cu
     float current_embedding[KEYWORD_PROTOTYPE_DIM];
     extract_embedding_from_audio(s_audio_window, current_embedding);
 
-    // Cosine similarity against ACTIVE prototype (either from NVS or default header)
-    float raw_similarity = compute_cosine_similarity(
+    // Cosine similarity vs ACTIVE keyword prototype + garbage veto (Change 2).
+    // NOTE: garbage comes from the header (NVS stores the keyword only).
+    float kw_similarity = compute_cosine_similarity(
         current_embedding,
         g_active_prototype,
         KEYWORD_PROTOTYPE_DIM
     );
+    float gb_similarity = compute_cosine_similarity(
+        current_embedding,
+        GARBAGE_PROTOTYPE,
+        KEYWORD_PROTOTYPE_DIM
+    );
+    float raw_similarity = ((kw_similarity - gb_similarity) < GARBAGE_MARGIN) ? -1.0f : kw_similarity;
 
     uint32_t latency_ms = millis() - t_start;
 

@@ -4,7 +4,7 @@ SIH Problem Statement 26172 - Milestone 9
 
 Synthesizes diverse acoustic utterances of unseen custom keywords (e.g., 'ZORA')
 across multiple voices, speaking rates, and acoustic conditions.
-Saves 16 kHz mono 16-bit PCM WAV files to D:\SIH_Model\data\raw\custom_keywords\zora.
+Saves 16 kHz mono 16-bit PCM WAV files under <repo>/data/raw/custom_keywords/zora.
 """
 
 import os
@@ -14,8 +14,10 @@ import subprocess
 import numpy as np
 import soundfile as sf
 import scipy.signal
+# Repo root from this file location (portable; was a hardcoded Windows path).
+_REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
-def synthesize_custom_keyword(keyword="Zora", output_dir=r"D:\SIH_Model\data\raw\custom_keywords\zora"):
+def synthesize_custom_keyword(keyword="Zora", output_dir=os.path.join(_REPO_ROOT, "data", "raw", "custom_keywords", "zora")):
     os.makedirs(output_dir, exist_ok=True)
     voices = ["Microsoft David Desktop", "Microsoft Zira Desktop"]
     rates = [-2, -1, 0, 1, 2]

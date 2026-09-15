@@ -5,6 +5,8 @@ SIH Problem Statement 26172
 
 import os
 import pandas as pd
+# Repo root from this file location (portable; was a hardcoded Windows path).
+_REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 
 METADATA_COLUMNS = [
     "dataset",
@@ -69,7 +71,7 @@ def validate_metadata_integrity(df):
         "leakage_detected": bool(leakage_train_val or leakage_train_test or leakage_val_test)
     }
 
-def save_manifests(combined_df, metadata_dir=r"D:\SIH_Model\data\metadata"):
+def save_manifests(combined_df, metadata_dir=os.path.join(_REPO_ROOT, "data", "metadata")):
     """
     Saves combined metadata and individual split manifests.
     """

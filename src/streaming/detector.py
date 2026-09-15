@@ -13,17 +13,29 @@ from src.features.mfcc import MFCCFeatureExtractor
 from src.streaming.ring_buffer import AudioRingBuffer
 from src.streaming.vad import EnergyVAD
 from src.streaming.state_machine import DetectionStateMachine, DetectionState
+from src.models.prototype import apply_garbage_veto
+from src.evaluation.latency import LatencyStats
 
 class StreamingVoiceActivator:
     def __init__(self, encoder, target_prototype: np.ndarray,
                  sample_rate=16000, window_duration_s=1.0,
-                 feature_extractor=None, vad=None, state_machine=None):
+                 feature_extractor=None, vad=None, state_machine=None,
+                 garbage_prototype=None, garbage_margin=0.05):
         self.encoder = encoder
         self.target_prototype = np.asarray(target_prototype, dtype=np.float32).flatten()
         # Ensure prototype is unit normalized
         norm = np.linalg.norm(self.target_prototype)
         if norm > 0:
             self.target_prototype /= norm
+
+        # Phase-1 Change 2: optional garbage prototype (None => legacy behavior)
+        self.garbage_margin = float(garbage_margin)
+        if garbage_prototype is None:
+            self.garbage_prototype = None
+        else:
+            g = np.asarray(garbage_prototype, dtype=np.float32).flatten()
+            gn = np.linalg.norm(g)
+            self.garbage_prototype = (g / gn) if gn > 0 else None
 
         self.sample_rate = sample_rate
         self.capacity_samples = int(sample_rate * window_duration_s)
@@ -55,19 +67,26 @@ class StreamingVoiceActivator:
         is_verifying = (self.state_machine.state == DetectionState.VERIFYING)
 
         if not is_speech and not is_verifying:
-            # Skip CNN inference: update state machine with baseline floor
+            # Skip CNN inference: decay smoothing with the baseline floor, but
+            # as UNOBSERVED (Change 3a: must not teach the background model).
             self.skipped_chunks += 1
-            sm_res = self.state_machine.process_similarity(raw_similarity=0.0, timestamp_ms=timestamp_ms)
+            sm_res = self.state_machine.process_similarity(raw_similarity=0.0, timestamp_ms=timestamp_ms, observed=False)
             elapsed_ms = (time.perf_counter() - t_start) * 1000.0
 
             return {
                 "timestamp_ms": timestamp_ms,
                 "is_speech": False,
                 "inference_skipped": True,
+                "garbage_similarity": None,
+                "garbage_vetoed": False,
                 "raw_similarity": 0.0,
                 "smoothed_similarity": sm_res["smoothed_similarity"],
+                "threshold_eff": sm_res["threshold_eff"],
+                "trigger_latency_ms": sm_res["trigger_latency_ms"],
                 "state": sm_res["state"],
-                "is_activated": False,
+                # Change 3d: persistence can complete on a silence frame;
+                # report the state machine's verdict, not a hardcoded False.
+                "is_activated": sm_res["is_activated"],
                 "processing_time_ms": round(elapsed_ms, 3)
             }
 
@@ -88,8 +107,15 @@ class StreamingVoiceActivator:
         if emb_norm > 0:
             emb /= emb_norm
 
-        # 6. Cosine similarity against enrolled target prototype
-        raw_sim = float(np.dot(emb, self.target_prototype))
+        # 6. Cosine similarity vs target (+ garbage veto, Change 2)
+        s_kw = float(np.dot(emb, self.target_prototype))
+        garbage_sim = None
+        garbage_vetoed = False
+        if self.garbage_prototype is not None:
+            garbage_sim = float(np.dot(emb, self.garbage_prototype))
+            raw_sim, garbage_vetoed = apply_garbage_veto(s_kw, garbage_sim, self.garbage_margin)
+        else:
+            raw_sim = s_kw
 
         # 7. Advance state machine
         sm_res = self.state_machine.process_similarity(raw_similarity=raw_sim, timestamp_ms=timestamp_ms)
@@ -99,12 +125,21 @@ class StreamingVoiceActivator:
             "timestamp_ms": timestamp_ms,
             "is_speech": is_speech,
             "inference_skipped": False,
+            "garbage_similarity": round(garbage_sim, 4) if garbage_sim is not None else None,
+            "garbage_vetoed": garbage_vetoed,
             "raw_similarity": sm_res["raw_similarity"],
             "smoothed_similarity": sm_res["smoothed_similarity"],
+            "threshold_eff": sm_res["threshold_eff"],
+            "trigger_latency_ms": sm_res["trigger_latency_ms"],
             "state": sm_res["state"],
             "is_activated": sm_res["is_activated"],
             "processing_time_ms": round(elapsed_ms, 3)
         }
+
+    def mark_keyword_end(self, timestamp_ms: float) -> None:
+        """Change 6 passthrough: ground-truth keyword-end marker for the next
+        activation's trigger_latency_ms (bench/sim only)."""
+        self.state_machine.mark_keyword_end(timestamp_ms)
 
     def simulate_stream(self, audio: np.ndarray, chunk_size_ms=50) -> dict:
         """
@@ -131,7 +166,8 @@ class StreamingVoiceActivator:
             if step_res["is_activated"]:
                 activations.append({
                     "timestamp_ms": timestamp_ms,
-                    "smoothed_similarity": step_res["smoothed_similarity"]
+                    "smoothed_similarity": step_res["smoothed_similarity"],
+                    "trigger_latency_ms": step_res["trigger_latency_ms"]
                 })
 
         total_proc_time = time.perf_counter() - t0
@@ -139,6 +175,11 @@ class StreamingVoiceActivator:
 
         skip_pct = (self.skipped_chunks / self.total_chunks * 100.0) if self.total_chunks > 0 else 0.0
         avg_inf_latency_ms = (self.total_inference_time_s / self.active_inference_chunks * 1000.0) if self.active_inference_chunks > 0 else 0.0
+
+        # Change 6: keyword-END -> trigger latency over marked activations
+        lat_stats = LatencyStats()
+        for act in activations:
+            lat_stats.add(act.get("trigger_latency_ms"))
 
         return {
             "audio_duration_seconds": round(duration_s, 2),
@@ -150,6 +191,7 @@ class StreamingVoiceActivator:
             "activation_events": activations,
             "average_inference_latency_ms": round(avg_inf_latency_ms, 2),
             "real_time_factor": round(rtf, 4),
+            "latency_stats": lat_stats.summary(),
             "telemetry": telemetry
         }
 

@@ -13,7 +13,9 @@ import pandas as pd
 import soundfile as sf
 import tensorflow as tf
 
-sys.path.insert(0, r"D:\SIH_Model")
+# Repo root from this file location (portable; was a hardcoded Windows path).
+_REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+sys.path.insert(0, _REPO_ROOT)
 from src.features.mfcc import MFCCFeatureExtractor
 from src.models.tiny_cnn import build_tiny_cnn_encoder
 from src.models.losses import SupervisedContrastiveLoss
@@ -24,7 +26,7 @@ def run_sanity_experiment():
     print("="*70)
 
     # 1. Load real audio samples from train manifest
-    manifest_path = r"D:\SIH_Model\data\metadata\train_manifest.csv"
+    manifest_path = os.path.join(_REPO_ROOT, "data", "metadata", "train_manifest.csv")
     if not os.path.exists(manifest_path):
         raise FileNotFoundError(f"Train manifest not found at {manifest_path}")
 
@@ -122,7 +124,7 @@ def run_sanity_experiment():
     print(f"  - L2 Unit Norm Preserved: {norm_preserved} (Max deviation: {np.max(np.abs(test_norms - 1.0)):.2e})")
 
     # 6. Save model checkpoint & results
-    checkpoint_dir = r"D:\SIH_Model\models\checkpoints"
+    checkpoint_dir = os.path.join(_REPO_ROOT, "models", "checkpoints")
     os.makedirs(checkpoint_dir, exist_ok=True)
     checkpoint_path = os.path.join(checkpoint_dir, "tiny_cnn_sanity.keras")
     encoder.save(checkpoint_path)
@@ -152,7 +154,7 @@ def run_sanity_experiment():
         }
     }
 
-    out_json = r"D:\SIH_Model\experiments\baseline\sanity_results.json"
+    out_json = os.path.join(_REPO_ROOT, "experiments", "baseline", "sanity_results.json")
     with open(out_json, "w", encoding="utf-8") as f:
         json.dump(results, f, indent=2)
     print(f"Saved sanity experiment results to: {out_json}")

@@ -19,10 +19,13 @@ import numpy as np
 import pandas as pd
 import soundfile as sf
 
-sys.path.insert(0, r"D:\SIH_Model")
+# Repo root from this file location (portable; was a hardcoded Windows path).
+_REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+sys.path.insert(0, _REPO_ROOT)
 from src.models.tiny_cnn import build_tiny_cnn_encoder
 from src.enrollment.enroll import KeywordEnrollmentManager
 from src.streaming.detector import StreamingVoiceActivator
+from src.models.prototype import compute_garbage_prototype
 from src.streaming.state_machine import DetectionStateMachine
 from src.evaluation.evaluate_robustness import RobustnessEvaluator
 
@@ -35,26 +38,26 @@ def run_robustness_benchmark():
     # 1. Load Model & Enrolled 3-Shot 'ZORA' Prototype
     print("\n[Step 1/5] Initializing Streaming Voice Activator...")
     encoder = build_tiny_cnn_encoder(input_shape=(98, 13, 1), embedding_dim=32)
-    weights_path = r"D:\SIH_Model\models\checkpoints\tiny_cnn_metric_best.weights.h5"
+    weights_path = os.path.join(_REPO_ROOT, "models", "checkpoints", "tiny_cnn_metric_best.weights.h5")
     if os.path.exists(weights_path):
         encoder.load_weights(weights_path)
         print(f"  Loaded model weights from: {weights_path}")
 
     enroll_manager = KeywordEnrollmentManager(encoder)
     zora_shots = [
-        r"D:\SIH_Model\data\raw\custom_keywords\zora\zora_david_rate+0_var0.wav",
-        r"D:\SIH_Model\data\raw\custom_keywords\zora\zora_david_rate+1_var0.wav",
-        r"D:\SIH_Model\data\raw\custom_keywords\zora\zora_zira_rate+0_var0.wav"
+        os.path.join(_REPO_ROOT, "data", "raw", "custom_keywords", "zora", "zora_david_rate+0_var0.wav"),
+        os.path.join(_REPO_ROOT, "data", "raw", "custom_keywords", "zora", "zora_david_rate+1_var0.wav"),
+        os.path.join(_REPO_ROOT, "data", "raw", "custom_keywords", "zora", "zora_zira_rate+0_var0.wav")
     ]
     zora_proto = enroll_manager.enroll(zora_shots, keyword_name="ZORA")["prototype"]
 
-    state_machine = DetectionStateMachine(threshold=0.78, hysteresis=0.05, consecutive_windows=3, cooldown_ms=1500)
+    state_machine = DetectionStateMachine(threshold=0.89, hysteresis=0.05, consecutive_windows=4, cooldown_ms=1500)
     activator = StreamingVoiceActivator(encoder, target_prototype=zora_proto, state_machine=state_machine)
     evaluator = RobustnessEvaluator(activator)
 
     # 2. Gather Test Audio Corpora
     print("\n[Step 2/5] Preparing Evaluation Audio Corpora...")
-    test_manifest_path = r"D:\SIH_Model\data\metadata\test_manifest.csv"
+    test_manifest_path = os.path.join(_REPO_ROOT, "data", "metadata", "test_manifest.csv")
     test_df = pd.read_csv(test_manifest_path)
 
     # Negative speech pool: 250 diverse human speech words (excluding zora)
@@ -62,12 +65,25 @@ def run_robustness_benchmark():
     neg_speech_files = neg_speech_df["filepath"].tolist()
 
     # Ambient noise pool: 50 noise files
-    noise_files = sorted(glob.glob(r"D:\SIH_Model\data\raw\noise\*.wav"))[:50]
+    noise_files = sorted(glob.glob(os.path.join(_REPO_ROOT, "data", "raw", "noise", "*.wav")))[:50]
     full_negative_pool = neg_speech_files + noise_files
     print(f"  Negative Stream Pool: {len(full_negative_pool)} files ({len(neg_speech_files)} human speech + {len(noise_files)} noise)")
 
+    # Phase-1 Change 2: garbage prototype from 6 speech + 6 noise negatives.
+    # Needs >= 3 files; otherwise veto stays disabled (bench still valid for 1+4).
+    gb_files = neg_speech_files[:6] + noise_files[:6]
+    garbage_proto = None
+    if len(gb_files) >= 3:
+        gb_embs = np.array([enroll_manager.extract_embedding_from_file(f) for f in gb_files])
+        garbage_proto = compute_garbage_prototype(gb_embs)
+        activator.garbage_prototype = garbage_proto  # unit-norm already, matches __init__ math
+        activator.garbage_margin = 0.05
+        print(f"  Garbage prototype: n={len(gb_files)} negatives, margin=0.05")
+    else:
+        print(f"  [WARN] only {len(gb_files)} negatives -> garbage veto DISABLED in this run")
+
     # Target 'ZORA' files: 30 files
-    zora_files = sorted(glob.glob(r"D:\SIH_Model\data\raw\custom_keywords\zora\*.wav"))
+    zora_files = sorted(glob.glob(os.path.join(_REPO_ROOT, "data", "raw", "custom_keywords", "zora", "*.wav")))
     print(f"  Target 'ZORA' Audio Samples: {len(zora_files)} files")
 
     # Confuser words: 'zero', 'four', 'no', 'go' (20 samples each)
@@ -119,9 +135,10 @@ def run_robustness_benchmark():
     # Threshold Sensitivity Sweep
     print("\nOperating Threshold Sensitivity Analysis (tau sweep):")
     threshold_sweep = []
-    for test_thresh in [0.70, 0.74, 0.78, 0.82, 0.86]:
-        sm_temp = DetectionStateMachine(threshold=test_thresh, hysteresis=0.05, consecutive_windows=3)
-        act_temp = StreamingVoiceActivator(encoder, target_prototype=zora_proto, state_machine=sm_temp)
+    for test_thresh in [0.74, 0.78, 0.82, 0.86, 0.89, 0.92]:
+        sm_temp = DetectionStateMachine(threshold=test_thresh, hysteresis=0.05, consecutive_windows=4)
+        act_temp = StreamingVoiceActivator(encoder, target_prototype=zora_proto, state_machine=sm_temp,
+                                           garbage_prototype=garbage_proto, garbage_margin=0.05)
         eval_temp = RobustnessEvaluator(act_temp)
 
         # Quick test on 50 negative clips + 10 targets
@@ -142,10 +159,12 @@ def run_robustness_benchmark():
         "timestamp": datetime.now().isoformat(),
         "milestone": "Milestone 11: False Activation Testing & Robustness Benchmark",
         "calibrated_operating_parameters": {
-            "operating_threshold": 0.78,
+            "operating_threshold": 0.89,
+            "garbage_negatives_n": len(gb_files),
+            "garbage_margin": 0.05,
             "hysteresis_deadband": 0.05,
-            "threshold_low": 0.73,
-            "consecutive_confirmation_windows": 3,
+            "threshold_low": 0.84,
+            "consecutive_confirmation_windows": 4,
             "cooldown_lockout_ms": 1500,
             "status": "FROZEN_FOR_FIRMWARE"
         },
@@ -155,7 +174,7 @@ def run_robustness_benchmark():
         "threshold_sensitivity_sweep": threshold_sweep
     }
 
-    out_json = r"D:\SIH_Model\experiments\threshold\robustness_benchmark_results.json"
+    out_json = os.path.join(_REPO_ROOT, "experiments", "threshold", "robustness_benchmark_results.json")
     with open(out_json, "w", encoding="utf-8") as f:
         json.dump(final_results, f, indent=2)
 

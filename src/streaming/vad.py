@@ -6,6 +6,8 @@ Ultra-lightweight time-domain speech detector:
 1. Calculates RMS energy and Zero Crossing Rate (ZCR)
 2. Tracks dynamic background noise floor
 3. Incorporates hangover smoothing to preserve word endings
+   (10x50ms tail: measured minimum covering short-keyword completion
+   windows in clean + noisy streams -- see experiments/vad_gate/)
 4. Skips heavy CNN inference during silence to enforce < 10% idle CPU utilization
 """
 
@@ -13,7 +15,7 @@ import numpy as np
 
 class EnergyVAD:
     def __init__(self, sample_rate=16000, min_energy_threshold=0.005,
-                 energy_multiplier=2.5, hangover_frames=3,
+                 energy_multiplier=2.5, hangover_frames=10,
                  max_background_energy=0.05, stuck_speech_limit_frames=200):
         self.sample_rate = sample_rate
         self.min_energy_threshold = float(min_energy_threshold)

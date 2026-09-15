@@ -18,7 +18,9 @@ import numpy as np
 import soundfile as sf
 from typing import Tuple, List, Dict, Any
 
-sys.path.insert(0, r"D:\SIH_Model")
+# Repo root from this file location (portable; was a hardcoded Windows path).
+_REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.insert(0, _REPO_ROOT)
 from src.streaming.demo_pipeline import EndToEndVoiceActivatorDemo
 
 
@@ -79,22 +81,22 @@ def build_continuous_stream() -> Tuple[np.ndarray, List[Dict[str, Any]]]:
     append_segment(np.random.normal(0, 0.002, sr * 3).astype(np.float32), "AMBIENT_SILENCE", "room_silence")
 
     # 2. 3.0s - 4.0s: Unrelated Speech Command: 'backward'
-    backward_path = r"D:\SIH_Model\data\raw\speech_commands\backward\0165e0e8_nohash_0.wav"
+    backward_path = os.path.join(_REPO_ROOT, "data", "raw", "speech_commands", "backward", "0165e0e8_nohash_0.wav")
     bw_clip = load_clip(backward_path)
     append_segment(bw_clip * 0.9, "UNRELATED_SPEECH", "backward")
 
     # 3. 4.0s - 6.0s: Kitchen Ambient Noise (running dishes)
-    noise_path = r"D:\SIH_Model\data\raw\noise\doing_the_dishes_chunk_0.wav"
+    noise_path = os.path.join(_REPO_ROOT, "data", "raw", "noise", "doing_the_dishes_chunk_0.wav")
     noise_clip = load_clip(noise_path, target_len=sr * 2)
     append_segment(noise_clip * 0.35, "BACKGROUND_NOISE", "doing_the_dishes")
 
     # 4. 6.0s - 7.0s: TARGET KEYWORD 1: 'ZORA' (Trigger 1)
-    zora_clip1_path = r"D:\SIH_Model\data\raw\custom_keywords\zora\zora_david_rate+0_var0.wav"
+    zora_clip1_path = os.path.join(_REPO_ROOT, "data", "raw", "custom_keywords", "zora", "zora_david_rate+0_var0.wav")
     zora_clip1 = load_clip(zora_clip1_path)
     append_segment(zora_clip1, "TARGET_KEYWORD", "ZORA")
 
     # 5. 7.0s - 9.0s: Post-Wake Speech Payload for ASR Handover (Simulated User Command)
-    post_wake1_path = r"D:\SIH_Model\data\raw\speech_commands\forward\0165e0e8_nohash_0.wav"
+    post_wake1_path = os.path.join(_REPO_ROOT, "data", "raw", "speech_commands", "forward", "0165e0e8_nohash_0.wav")
     post_wake1 = load_clip(post_wake1_path, target_len=sr * 2)
     append_segment(post_wake1 * 0.9, "POST_WAKE_SPEECH", "forward_command")
 
@@ -102,27 +104,27 @@ def build_continuous_stream() -> Tuple[np.ndarray, List[Dict[str, Any]]]:
     append_segment(np.random.normal(0, 0.002, sr * 3).astype(np.float32), "AMBIENT_SILENCE", "room_silence")
 
     # 7. 12.0s - 13.0s: Phonetic Confuser Word: 'zero' (Tests false alarm rejection)
-    zero_path = r"D:\SIH_Model\data\raw\speech_commands\zero\0165e0e8_nohash_0.wav"
+    zero_path = os.path.join(_REPO_ROOT, "data", "raw", "speech_commands", "zero", "0165e0e8_nohash_0.wav")
     zero_clip = load_clip(zero_path)
     append_segment(zero_clip * 0.9, "CONFUSER_WORD", "zero")
 
     # 8. 13.0s - 15.0s: Pink Noise / Running Tap (2s)
-    tap_path = r"D:\SIH_Model\data\raw\noise\running_tap_chunk_0.wav"
+    tap_path = os.path.join(_REPO_ROOT, "data", "raw", "noise", "running_tap_chunk_0.wav")
     tap_clip = load_clip(tap_path, target_len=sr * 2)
     append_segment(tap_clip * 0.3, "BACKGROUND_NOISE", "running_tap")
 
     # 9. 15.0s - 16.0s: TARGET KEYWORD 2: 'ZORA' (Trigger 2, fast speaking rate)
-    zora_clip2_path = r"D:\SIH_Model\data\raw\custom_keywords\zora\zora_david_rate+2_var1.wav"
+    zora_clip2_path = os.path.join(_REPO_ROOT, "data", "raw", "custom_keywords", "zora", "zora_david_rate+2_var1.wav")
     zora_clip2 = load_clip(zora_clip2_path)
     append_segment(zora_clip2, "TARGET_KEYWORD", "ZORA")
 
     # 10. 16.0s - 18.0s: Post-Wake Speech Payload 2 for ASR Handover
-    post_wake2_path = r"D:\SIH_Model\data\raw\speech_commands\stop\0165e0e8_nohash_0.wav"
+    post_wake2_path = os.path.join(_REPO_ROOT, "data", "raw", "speech_commands", "stop", "0165e0e8_nohash_0.wav")
     post_wake2 = load_clip(post_wake2_path, target_len=sr * 2)
     append_segment(post_wake2 * 0.9, "POST_WAKE_SPEECH", "stop_command")
 
     # 11. 18.0s - 21.0s: Unrelated Speech Command: 'yes' + Ambient
-    yes_path = r"D:\SIH_Model\data\raw\speech_commands\yes\0165e0e8_nohash_0.wav"
+    yes_path = os.path.join(_REPO_ROOT, "data", "raw", "speech_commands", "yes", "0165e0e8_nohash_0.wav")
     yes_clip = load_clip(yes_path)
     append_segment(yes_clip * 0.9, "UNRELATED_SPEECH", "yes")
     append_segment(np.random.normal(0, 0.002, sr * 4).astype(np.float32), "AMBIENT_SILENCE", "room_silence")
@@ -139,26 +141,26 @@ def main():
 
     # 1. Initialize Demonstration System with Calibrated Thresholds
     print("\n[STAGE 1] Initializing Edge Voice Activator Pipeline...")
-    model_path = r"D:\SIH_Model\models\tflite\voice_activator_int8.tflite"
+    model_path = os.path.join(_REPO_ROOT, "models", "tflite", "voice_activator_int8.tflite")
     activator = EndToEndVoiceActivatorDemo(
         tflite_model_path=model_path,
         sample_rate=16000,
         chunk_size_ms=50,
-        tau_high=0.90,
-        tau_low=0.86,
+        tau_high=0.89,
+        tau_low=0.84,
         persistence=4
     )
     print(f"  Loaded Quantized Model:   {model_path}")
     print(f"  Model Size:               {os.path.getsize(model_path):,} bytes ({os.path.getsize(model_path)/1024.0:.2f} KB)")
     print(f"  Streaming Stride:         50 ms chunks (800 samples @ 16 kHz)")
-    print(f"  Operating Thresholds:     tau_high = 0.90, tau_low = 0.86 (Hysteresis), N = 4 windows")
+    print(f"  Operating Thresholds:     tau_high = 0.89, tau_low = 0.84 (Hysteresis), N = 4 windows")
 
     # 2. Dynamic Few-Shot Enrollment of Custom Unseen Keyword ("ZORA")
     print("\n[STAGE 2] Dynamic Few-Shot Enrollment (Unseen Keyword: 'ZORA')...")
     enrollment_paths = [
-        r"D:\SIH_Model\data\raw\custom_keywords\zora\zora_david_rate+0_var0.wav",
-        r"D:\SIH_Model\data\raw\custom_keywords\zora\zora_david_rate+0_var1.wav",
-        r"D:\SIH_Model\data\raw\custom_keywords\zora\zora_david_rate+1_var0.wav"
+        os.path.join(_REPO_ROOT, "data", "raw", "custom_keywords", "zora", "zora_david_rate+0_var0.wav"),
+        os.path.join(_REPO_ROOT, "data", "raw", "custom_keywords", "zora", "zora_david_rate+0_var1.wav"),
+        os.path.join(_REPO_ROOT, "data", "raw", "custom_keywords", "zora", "zora_david_rate+1_var0.wav")
     ]
     enroll_info = activator.enroll_keyword(enrollment_paths, keyword_name="ZORA")
     print(f"  Keyword:                  {enroll_info['keyword']}")
@@ -261,8 +263,8 @@ def main():
             "confuser_word_rejection": {
                 "confuser_word": "zero",
                 "max_similarity_observed": round(confuser_max_sim, 4),
-                "threshold_tau_high": 0.90,
-                "rejection_successful": bool(confuser_max_sim < 0.90)
+                "threshold_tau_high": 0.89,
+                "rejection_successful": bool(confuser_max_sim < 0.89)
             },
             "average_per_chunk_inference_ms": round(avg_inf_latency, 2),
             "real_time_factor": round(rtf / 1000.0, 4)
@@ -307,7 +309,7 @@ def main():
         }
     }
 
-    report_path = r"D:\SIH_Model\experiments\sih_final_demo_report.json"
+    report_path = os.path.join(_REPO_ROOT, "experiments", "sih_final_demo_report.json")
     with open(report_path, "w", encoding="utf-8") as f:
         json.dump(demo_report, f, indent=2)
 
@@ -325,7 +327,7 @@ def main():
     for idx, (act, lat) in enumerate(zip(activations, detection_latencies), 1):
         print(f"  [Activation {idx}] Time: {act['timestamp_ms']:.1f} ms | Latency: {lat:.1f} ms from onset | Conf: {act['smoothed_sim']:.4f}")
     print(f"Average Detection Latency:    {np.mean(detection_latencies):.1f} ms (Target: < 500 ms -> PASSED [x])")
-    print(f"Confuser Word ('zero'):       Max Sim: {confuser_max_sim:.4f} < 0.90 -> REJECTED [x] (0 False Alarms)")
+    print(f"Confuser Word ('zero'):       Max Sim: {confuser_max_sim:.4f} < 0.89 -> REJECTED [x] (0 False Alarms)")
     print(f"Unrelated Words ('yes', ...): REJECTED [x] (0 False Alarms)")
     print(f"ASR Handover Events:          {len(handover_events)} successful dispatches (2.0s speech payload)")
     print("-" * 85)

@@ -1,0 +1,122 @@
+{
+  "operating_point": {
+    "threshold": 0.89,
+    "smoothing_window": 8,
+    "consecutive_windows": 4,
+    "adaptive": true
+  },
+  "scenarios": [
+    {
+      "scenario": "clean_single",
+      "chunks": 96,
+      "expected_triggers": 1,
+      "triggers": [
+        {
+          "timestamp_ms": 2500.0,
+          "trigger_latency_ms": -300.0,
+          "tau_eff_at_trigger": 0.89
+        }
+      ],
+      "tau_eff_max": 0.89,
+      "latency_stats": {
+        "n": 1,
+        "mean_ms": -300.0,
+        "p50_ms": -300.0,
+        "p95_ms": -300.0,
+        "p99_ms": -300.0,
+        "max_ms": -300.0,
+        "min_ms": -300.0,
+        "early_triggers": 1,
+        "late_triggers": 0,
+        "budget_ms": 1000.0,
+        "max_within_budget": true,
+        "verdict": "PASS"
+      },
+      "count_match": true
+    },
+    {
+      "scenario": "noisy_bg",
+      "chunks": 176,
+      "expected_triggers": 1,
+      "triggers": [
+        {
+          "timestamp_ms": 6400.0,
+          "trigger_latency_ms": -400.0,
+          "tau_eff_at_trigger": 0.95
+        }
+      ],
+      "tau_eff_max": 0.95,
+      "latency_stats": {
+        "n": 1,
+        "mean_ms": -400.0,
+        "p50_ms": -400.0,
+        "p95_ms": -400.0,
+        "p99_ms": -400.0,
+        "max_ms": -400.0,
+        "min_ms": -400.0,
+        "early_triggers": 1,
+        "late_triggers": 0,
+        "budget_ms": 1000.0,
+        "max_within_budget": true,
+        "verdict": "PASS"
+      },
+      "count_match": true
+    },
+    {
+      "scenario": "short_keyword",
+      "chunks": 88,
+      "expected_triggers": 0,
+      "triggers": [],
+      "tau_eff_max": 0.89,
+      "latency_stats": {
+        "n": 0,
+        "mean_ms": null,
+        "p50_ms": null,
+        "p95_ms": null,
+        "p99_ms": null,
+        "max_ms": null,
+        "min_ms": null,
+        "early_triggers": 0,
+        "late_triggers": 0,
+        "budget_ms": 1000.0,
+        "max_within_budget": null,
+        "verdict": "NO_DATA"
+      },
+      "count_match": true
+    },
+    {
+      "scenario": "double_keyword",
+      "chunks": 192,
+      "expected_triggers": 2,
+      "triggers": [
+        {
+          "timestamp_ms": 2500.0,
+          "trigger_latency_ms": -300.0,
+          "tau_eff_at_trigger": 0.89
+        },
+        {
+          "timestamp_ms": 7300.0,
+          "trigger_latency_ms": -300.0,
+          "tau_eff_at_trigger": 0.89
+        }
+      ],
+      "tau_eff_max": 0.89,
+      "latency_stats": {
+        "n": 2,
+        "mean_ms": -300.0,
+        "p50_ms": -300.0,
+        "p95_ms": -300.0,
+        "p99_ms": -300.0,
+        "max_ms": -300.0,
+        "min_ms": -300.0,
+        "early_triggers": 2,
+        "late_triggers": 0,
+        "budget_ms": 1000.0,
+        "max_within_budget": true,
+        "verdict": "PASS"
+      },
+      "count_match": true
+    }
+  ],
+  "verdict": "PASS"
+}

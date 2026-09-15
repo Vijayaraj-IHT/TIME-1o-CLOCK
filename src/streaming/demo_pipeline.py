@@ -22,6 +22,9 @@ from src.features.mfcc import MFCCFeatureExtractor
 from src.streaming.ring_buffer import AudioRingBuffer
 from src.streaming.vad import EnergyVAD
 from src.streaming.state_machine import DetectionStateMachine, DetectionState
+from src.models.tflite_quant import quantize_input, dequantize_output, io_quant_params
+# Repo root from this file location (portable; was a hardcoded Windows path).
+_REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 
 
 def load_calibrated_thresholds(config_path: Optional[str] = None) -> Dict[str, float]:
@@ -87,12 +90,12 @@ class EndToEndVoiceActivatorDemo:
         tflite_model_path: Optional[str] = None,
         sample_rate: int = 16000,
         chunk_size_ms: int = 50,
-        # NOTE: these MUST match configs/config.yaml -> detection.{threshold, hysteresis, consecutive_windows}
+        # NOTE: these MUST match configs/config.yaml -> detection.{threshold, hysteresis, consecutive_windows, smoothing_window}
         # otherwise the FAR/false-reject numbers in experiments/threshold/*.json describe a
         # different operating point than what actually runs here. See CONFIG_SYNC_CHECK below.
-        tau_high: float = 0.78,
-        tau_low: float = 0.73,
-        persistence: int = 3
+        tau_high: float = 0.89,
+        tau_low: float = 0.84,
+        persistence: int = 4
     ):
         # Fix #1 guard: catch future drift between hardcoded call sites and config.yaml
         # at construction time, loudly, instead of silently running an uncalibrated operating point.
@@ -116,7 +119,7 @@ class EndToEndVoiceActivatorDemo:
             elif tflite_model_path and os.path.exists(tflite_model_path):
                 pass
             else:
-                legacy_path = r"D:\SIH_Model\models\tflite\voice_activator_int8.tflite"
+                legacy_path = os.path.join(_REPO_ROOT, "models", "tflite", "voice_activator_int8.tflite")
                 if os.path.exists(legacy_path):
                     tflite_model_path = legacy_path
                 else:
@@ -132,9 +135,18 @@ class EndToEndVoiceActivatorDemo:
 
         # Ring buffer (16,000 samples = 1.0 second)
         self.ring_buffer = AudioRingBuffer(capacity_samples=sample_rate)
+        # Cold-start fix (Sep-14): pre-fill with silence so the ring is full
+        # from t=0. A keyword inside the first second previously never reached
+        # inference (BUFFERING gate; VAD never ran). First-1s windows are
+        # zero-padded -- the same windows detector.py and live_mic use from
+        # chunk 0 (neither gates on full). S2/S4/S5 prove detection works and
+        # silence stays silent (tests/test_vad_gate.py).
+        self.ring_buffer.append(np.zeros(sample_rate, dtype=np.float32))
 
         # Voice Activity Detector (VAD)
-        self.vad = EnergyVAD(sample_rate=sample_rate, min_energy_threshold=0.005, energy_multiplier=2.5, hangover_frames=3)
+        # hangover 10 (was 3): short-keyword completion windows fall in post-word
+        # silence; 3 missed them systematically (VAD-miss fix, Sep-14).
+        self.vad = EnergyVAD(sample_rate=sample_rate, min_energy_threshold=0.005, energy_multiplier=2.5, hangover_frames=10)
 
         # State machine
         hysteresis = float(tau_high - tau_low)
@@ -142,7 +154,7 @@ class EndToEndVoiceActivatorDemo:
             threshold=tau_high,
             hysteresis=hysteresis,
             consecutive_windows=persistence,
-            smoothing_window=5,
+            smoothing_window=8,
             cooldown_ms=1500.0
         )
 
@@ -157,18 +169,24 @@ class EndToEndVoiceActivatorDemo:
         self.interpreter.allocate_tensors()
         self.input_details = self.interpreter.get_input_details()
         self.output_details = self.interpreter.get_output_details()
+        # Change 3c: quantization-aware I/O (exact pass-through for float32 models).
+        _, self._in_dtype, self._in_scale, self._in_zp = io_quant_params(self.input_details[0])
+        _, _, self._out_scale, self._out_zp = io_quant_params(self.output_details[0])
 
         # Enrolled Prototype Centroid (32-D)
         self.enrolled_keyword_name: Optional[str] = None
         self.prototype_centroid: Optional[np.ndarray] = None
         self.enrollment_intra_sim: float = 0.0
+        self.garbage_centroid: Optional[np.ndarray] = None  # Change 2 (None => disabled)
+        self.garbage_margin: float = 0.05
 
         # Handover state
         self.capturing_post_wake_asr = False
         self.asr_buffer = []
         self.asr_buffer_target_samples = int(sample_rate * 2.0)  # 2.0s post-wake audio
 
-    def enroll_keyword(self, audio_paths: List[str], keyword_name: str) -> Dict[str, Any]:
+    def enroll_keyword(self, audio_paths: List[str], keyword_name: str,
+                         negative_paths: Optional[List[str]] = None) -> Dict[str, Any]:
         """
         Dynamically enrolls an unseen custom keyword using K audio utterances.
         Computes the L2-normalized prototype centroid using the INT8 TFLite model.
@@ -193,11 +211,11 @@ class EndToEndVoiceActivatorDemo:
                 audio = audio[:self.sample_rate]
 
             mfcc = self.feature_extractor.extract(audio)  # (98, 13)
-            tensor = np.expand_dims(np.expand_dims(mfcc, axis=0), axis=-1).astype(self.input_details[0]["dtype"])
+            tensor = quantize_input(np.expand_dims(np.expand_dims(mfcc, axis=0), axis=-1), self._in_scale, self._in_zp, self._in_dtype)
 
             self.interpreter.set_tensor(self.input_details[0]["index"], tensor)
             self.interpreter.invoke()
-            emb = self.interpreter.get_tensor(self.output_details[0]["index"])[0]
+            emb = dequantize_output(self.interpreter.get_tensor(self.output_details[0]["index"])[0], self._out_scale, self._out_zp)
 
             # Normalize embedding
             norm = np.linalg.norm(emb)
@@ -209,6 +227,35 @@ class EndToEndVoiceActivatorDemo:
         centroid = centroid / np.linalg.norm(centroid)
         self.prototype_centroid = centroid
 
+        # Phase-1 Change 2: garbage prototype from negative clips (silence/noise/confusers)
+        self.garbage_centroid = None
+        if negative_paths:
+            neg_embs = []
+            for p in negative_paths:
+                audio, sr = sf.read(p, dtype="float32")
+                if audio.ndim > 1:
+                    audio = np.mean(audio, axis=1)
+                if sr != self.sample_rate:
+                    target_len = int(len(audio) * (self.sample_rate / sr))
+                    audio = np.interp(
+                        np.linspace(0, len(audio), target_len, endpoint=False),
+                        np.arange(len(audio)),
+                        audio
+                    ).astype(np.float32)
+                if len(audio) < self.sample_rate:
+                    audio = np.pad(audio, (0, self.sample_rate - len(audio)), mode="constant")
+                elif len(audio) > self.sample_rate:
+                    audio = audio[:self.sample_rate]
+                mfcc = self.feature_extractor.extract(audio)
+                tensor = quantize_input(np.expand_dims(np.expand_dims(mfcc, axis=0), axis=-1), self._in_scale, self._in_zp, self._in_dtype)
+                self.interpreter.set_tensor(self.input_details[0]["index"], tensor)
+                self.interpreter.invoke()
+                emb = dequantize_output(self.interpreter.get_tensor(self.output_details[0]["index"])[0], self._out_scale, self._out_zp)
+                n = np.linalg.norm(emb)
+                neg_embs.append(emb / (n + 1e-9))
+            g = np.mean(np.array(neg_embs), axis=0)
+            self.garbage_centroid = g / (np.linalg.norm(g) + 1e-9)
+
         # Compute pairwise intra-enrollment similarity
         pairwise_sims = []
         for i in range(len(embeddings)):
@@ -219,10 +266,16 @@ class EndToEndVoiceActivatorDemo:
         return {
             "keyword": keyword_name,
             "shots_count": len(audio_paths),
+            "garbage_n": len(negative_paths) if negative_paths else 0,
             "intra_similarity": round(self.enrollment_intra_sim, 4),
             "prototype_dimension": int(len(centroid)),
             "prototype_norm": round(float(np.linalg.norm(centroid)), 4)
         }
+
+    def mark_keyword_end(self, timestamp_ms: float) -> None:
+        """Change 6 passthrough: ground-truth keyword-end marker for the next
+        activation's trigger_latency_ms (bench/sim only)."""
+        self.state_machine.mark_keyword_end(timestamp_ms)
 
     def process_chunk(self, audio_chunk: np.ndarray, timestamp_ms: float) -> Dict[str, Any]:
         """
@@ -253,8 +306,28 @@ class EndToEndVoiceActivatorDemo:
         # 1. VAD Gating
         is_speech = self.vad.is_speech(audio_chunk)
         if not is_speech:
-            # Silence/Ambient: update state machine with zero similarity to decay smoothly
-            _ = self.state_machine.process_similarity(0.0, timestamp_ms)
+            # Silence/Ambient: decay the smoothing average with zero similarity,
+            # but as UNOBSERVED (Change 3a: no inference ran, so this frame must
+            # not teach the Change-5 background model).
+            sm_sil = self.state_machine.process_similarity(0.0, timestamp_ms, observed=False)
+            # Change 3d: persistence can complete ON a silence frame (decay edge
+            # still above tau_low after 7 hot frames). That is a legitimate
+            # keyword-END trigger (ideal latency, in fact) -- it must raise
+            # ACTIVATION_TRIGGERED + start ASR capture, not vanish as VAD_SKIP.
+            if sm_sil.get("is_activated"):
+                self.capturing_post_wake_asr = True
+                self.asr_buffer = []
+                return {
+                    "event": "ACTIVATION_TRIGGERED",
+                    "timestamp_ms": timestamp_ms,
+                    "vad_speech": False,
+                    "raw_sim": 0.0,
+                    "smoothed_sim": round(sm_sil.get("smoothed_similarity", 0.0), 4),
+                    "threshold_eff": sm_sil.get("threshold_eff", 0.89),
+                    "trigger_latency_ms": sm_sil.get("trigger_latency_ms"),
+                    "state": self.state_machine.state,
+                    "activated": True
+                }
             return {
                 "event": "VAD_SKIP",
                 "timestamp_ms": timestamp_ms,
@@ -268,18 +341,23 @@ class EndToEndVoiceActivatorDemo:
         mfcc = self.feature_extractor.extract(window)  # (98, 13)
 
         # 3. Model Inference via TFLite INT8
-        tensor = np.expand_dims(np.expand_dims(mfcc, axis=0), axis=-1).astype(self.input_details[0]["dtype"])
+        tensor = quantize_input(np.expand_dims(np.expand_dims(mfcc, axis=0), axis=-1), self._in_scale, self._in_zp, self._in_dtype)
         self.interpreter.set_tensor(self.input_details[0]["index"], tensor)
         self.interpreter.invoke()
-        emb = self.interpreter.get_tensor(self.output_details[0]["index"])[0]
+        emb = dequantize_output(self.interpreter.get_tensor(self.output_details[0]["index"])[0], self._out_scale, self._out_zp)
         inference_latency_ms = (time.perf_counter() - t0) * 1000.0
 
         # Normalize embedding
         norm = np.linalg.norm(emb)
         emb_norm = emb / (norm + 1e-9)
 
-        # 4. Cosine Similarity against enrolled prototype
+        # 4. Cosine similarity vs prototype (+ garbage veto, Change 2)
         cosine_sim = float(np.dot(emb_norm, self.prototype_centroid))
+        garbage_sim = None
+        if self.garbage_centroid is not None:
+            garbage_sim = float(np.dot(emb_norm, self.garbage_centroid))
+            if (cosine_sim - garbage_sim) < self.garbage_margin:
+                cosine_sim = -1.0  # vetoed: garbage wins
 
         # 5. Hysteresis State Machine Transition
         sm_status = self.state_machine.process_similarity(cosine_sim, timestamp_ms)
@@ -290,7 +368,10 @@ class EndToEndVoiceActivatorDemo:
             "timestamp_ms": timestamp_ms,
             "vad_speech": True,
             "raw_sim": round(cosine_sim, 4),
+            "garbage_sim": round(garbage_sim, 4) if garbage_sim is not None else None,
             "smoothed_sim": round(sm_status.get("smoothed_similarity", 0.0), 4),
+            "threshold_eff": sm_status.get("threshold_eff", 0.89),
+            "trigger_latency_ms": sm_status.get("trigger_latency_ms"),
             "state": self.state_machine.state,
             "latency_ms": round(inference_latency_ms, 2),
             "activated": activated

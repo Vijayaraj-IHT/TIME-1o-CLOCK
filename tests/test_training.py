@@ -8,7 +8,10 @@ import unittest
 import numpy as np
 import tensorflow as tf
 
-sys.path.insert(0, r"D:\SIH_Model")
+import os
+# Repo root from this file location (portable; was a hardcoded Windows path).
+_REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.insert(0, _REPO_ROOT)
 from src.features.mfcc import MFCCFeatureExtractor
 from src.training.batch_generator import MetricLearningBatchGenerator
 from src.training.validate import MetricValidator
@@ -19,8 +22,8 @@ class TestMetricTrainingPipeline(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.train_manifest = r"D:\SIH_Model\data\metadata\train_manifest.csv"
-        cls.val_manifest = r"D:\SIH_Model\data\metadata\validation_manifest.csv"
+        cls.train_manifest = os.path.join(_REPO_ROOT, "data", "metadata", "train_manifest.csv")
+        cls.val_manifest = os.path.join(_REPO_ROOT, "data", "metadata", "validation_manifest.csv")
         cls.generator = MetricLearningBatchGenerator(cls.train_manifest, max_samples_per_class=10, seed=42)
         cls.encoder = build_ds_cnn_encoder(input_shape=(98, 13, 1), embedding_dim=32)
 

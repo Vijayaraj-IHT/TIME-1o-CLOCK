@@ -83,7 +83,7 @@ primary model needs 63KB — the old allocation left under 2% headroom).
 
 ## Not fixed in this pass (flagged, out of scope for a Python-side patch)
 - **ESP32 ring buffer read/write race condition**: `g_ring_buffer`/`g_state_machine` are global, unsynchronized
-  state. If I2S DMA fill and the inference loop run on separate FreeRTOS tasks/cores, a torn read during
+  state. **[FIXED Sep-14 — see note at end of file.]** If I2S DMA fill and the inference loop run on separate FreeRTOS tasks/cores, a torn read during
   `read_window()` is possible. Needs a board-specific mutex/critical-section strategy (`portENTER_CRITICAL` or
   a lock-free double-buffer) matched to your actual task/core layout — flagging rather than guessing at your
   RTOS configuration.
@@ -91,3 +91,53 @@ primary model needs 63KB — the old allocation left under 2% headroom).
   acoustic conditions (vs. clean studio/read-speech source data) should be re-verified empirically by rerunning
   `experiments/quantization/benchmark_quantization.py` against real mic-captured calibration clips before the
   final demo.
+
+## Update Sep-14: ring-buffer race FIXED (SPSC seqlock, no mutex needed)
+
+The flagged race is fixed in `src/deployment/esp32/audio_ring_buffer.h`
+(master, synced to the WROOM flavor). Design: single-producer /
+single-consumer seqlock — `push()`/`reset()` (I2S side) bracket each write
+batch with an odd/even atomic sequence; `read_window()` retries until the
+sequence is unchanged across the copy, so every returned window is a
+consistent snapshot. All shared state is `std::atomic` (same 32 KB, zero
+extra RAM); no FreeRTOS dependency, no CAS loops, portable to both Xtensa
+cores. The state machine + interpreter stay single-task (inference only) by
+construction — the ring is the only cross-task handoff. Contract (incl. the
+`reset()`-from-producer-side rule) is documented in the header.
+
+Proof (`tools/verify_spsc/ring_stress.cpp`, host g++, 2 threads, 800-sample
+chunks, mid-run producer-side reset): 58,860 consecutive-snapshot windows
+checked, 0 tears; ThreadSanitizer run: 0 tears + zero data-race warnings.
+Single-threaded behavior is bit-identical to the pre-seqlock version (same
+index math; the inner modulo became a branch-subtract, equivalent here).
+
+## Update Sep-14: neural VAD-gate miss FIXED (hangover 3 -> 10, host + firmware)
+
+Symptom (found by the Track-B pilot): on sil+z2+z2+sil the neural demo fired
+1/2 -- VAD_SKIP 1500-1900ms skipped keyword#1's completion windows, the
+8-frame smoothing decayed (0.48 max), persistence never completed, although
+the raw similarity was 0.98 (hot evidence thrown away by the gate).
+
+Root cause: short keywords (~270ms word) complete inside post-word silence.
+Hangover 3 (150ms tail) ends inference before the completion windows are
+evaluated. Sweep proof (`experiments/vad_gate/repro_vad_miss.py`, 6 streams):
+hangover 3 misses clean/noisy/warm short-keyword streams systematically;
+6 fixes clean/warm; 10 fixes noisy too; 4s pure-negative streams stay at 0
+triggers at every setting (no FA cost). Firmware gates had NO hangover at
+all (worse than the host) -- both entry points now carry the tail.
+
+Fix: `EnergyVAD` default + `demo_pipeline` + `live_mic_activator` hangover 3
+-> 10; `esp32/main.cpp` + wroom `.ino` gain `VAD_HANGOVER_CHUNKS=10` with
+host-mirror counter semantics (speech reloads, silent tail chunks still
+infer). Idle CPU unchanged (silence still skips); only post-speech bursts
+spend ~10 extra inferences. Regression: `tests/test_vad_gate.py` (S5 2/2,
+S3/noisy 1/1, S4/negatives 0, hangover-tail unit test).
+
+Known remainder, FIXED Sep-14 (cold-start pre-fill): the ring is now
+pre-filled with silence at construction (host `demo_pipeline`) and at boot
+(firmware `setup`, both flavors), so `is_full()` holds from the first chunk
+and first-1s keywords reach inference on zero-padded windows -- the same
+windows `detector.py`/`live_mic` always used (neither gates on full).
+Measured: S2-cold [] -> [1150], keyword-at-t=0 -> [650], S1/S5/S4 unchanged
+([1650]/[1650,4650]/[]). Regression: `test_s2_cold_start_detected` +
+`test_s0_keyword_at_t0_detected` in tests/test_vad_gate.py.

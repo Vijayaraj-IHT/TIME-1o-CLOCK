@@ -9,10 +9,12 @@ import tarfile
 import urllib.request
 import soundfile as sf
 from tqdm import tqdm
+# Repo root from this file location (portable; was a hardcoded Windows path).
+_REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 
 OFFICIAL_URL = "http://download.tensorflow.org/data/speech_commands_v0.02.tar.gz"
 
-def get_dataset_status(data_dir=r"D:\SIH_Model\data\raw\speech_commands"):
+def get_dataset_status(data_dir=os.path.join(_REPO_ROOT, "data", "raw", "speech_commands")):
     """
     Inspects whether the Speech Commands dataset is downloaded and extracted.
     """
@@ -130,7 +132,7 @@ def inspect_dataset(data_dir):
     print("="*60)
     return status
 
-def download_speech_commands(data_dir=r"D:\SIH_Model\data\raw\speech_commands", force=False):
+def download_speech_commands(data_dir=os.path.join(_REPO_ROOT, "data", "raw", "speech_commands"), force=False):
     status = get_dataset_status(data_dir)
     if status["sample_count"] > 10000 and not force:
         print(f"Speech Commands already downloaded and verified ({status['sample_count']} samples).")
@@ -152,7 +154,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Acquire and inspect Speech Commands v0.02")
     parser.add_argument("--check-only", action="store_true", help="Inspect without downloading")
     parser.add_argument("--force", action="store_true", help="Force redownload and re-extraction")
-    parser.add_argument("--data-dir", default=r"D:\SIH_Model\data\raw\speech_commands", help="Target data directory")
+    parser.add_argument("--data-dir", default=os.path.join(_REPO_ROOT, "data", "raw", "speech_commands"), help="Target data directory")
     args = parser.parse_args()
 
     if args.check_only:

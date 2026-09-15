@@ -8,12 +8,14 @@ import sys
 import pandas as pd
 from tqdm import tqdm
 
-sys.path.insert(0, r"D:\SIH_Model")
+# Repo root from this file location (portable; was a hardcoded Windows path).
+_REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+sys.path.insert(0, _REPO_ROOT)
 from src.data.metadata import create_metadata_dataframe, validate_metadata_integrity
 from src.data.split_dataset import assign_speech_commands_split
 
-def prepare_speech_commands(raw_dir=r"D:\SIH_Model\data\raw\speech_commands",
-                            output_csv=r"D:\SIH_Model\data\metadata\speech_commands_metadata.csv"):
+def prepare_speech_commands(raw_dir=os.path.join(_REPO_ROOT, "data", "raw", "speech_commands"),
+                            output_csv=os.path.join(_REPO_ROOT, "data", "metadata", "speech_commands_metadata.csv")):
     print("\n" + "="*60)
     print("PREPARING SPEECH COMMANDS DATASET METADATA")
     print("="*60)

@@ -17,6 +17,7 @@ from typing import Generator, List, Optional, Tuple, Dict, Any
 from src.features.mfcc import MFCCFeatureExtractor
 from src.models.tiny_cnn import build_tiny_cnn_encoder
 from src.models.ds_cnn import build_ds_cnn_encoder
+from src.models.tflite_quant import quantize_input, dequantize_output, io_quant_params
 
 
 class ModelQuantizer:
@@ -136,16 +137,19 @@ class ModelQuantizer:
         interpreter.allocate_tensors()
         input_details = interpreter.get_input_details()
         output_details = interpreter.get_output_details()
+        # Change 3c: quantization-aware I/O (pass-through for float models).
+        _, _, _in_scale, _in_zp = io_quant_params(input_details[0])
+        _, _, _out_scale, _out_zp = io_quant_params(output_details[0])
 
         if input_data.ndim == 3:
             input_data = np.expand_dims(input_data, axis=0)
 
         outputs = []
         for i in range(input_data.shape[0]):
-            sample = np.expand_dims(input_data[i], axis=0).astype(input_details[0]["dtype"])
+            sample = quantize_input(np.expand_dims(input_data[i], axis=0), _in_scale, _in_zp, input_details[0]["dtype"])
             interpreter.set_tensor(input_details[0]["index"], sample)
             interpreter.invoke()
-            out = interpreter.get_tensor(output_details[0]["index"])
+            out = dequantize_output(interpreter.get_tensor(output_details[0]["index"]), _out_scale, _out_zp)
             outputs.append(out[0])
 
         return np.array(outputs, dtype=np.float32)

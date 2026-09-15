@@ -8,7 +8,9 @@ import sys
 import unittest
 import numpy as np
 
-sys.path.insert(0, r"D:\SIH_Model")
+# Repo root from this file location (portable; was a hardcoded Windows path).
+_REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.insert(0, _REPO_ROOT)
 from src.streaming.demo_pipeline import EndToEndVoiceActivatorDemo
 
 
@@ -17,16 +19,16 @@ class TestDemoPipeline(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.model_path = r"D:\SIH_Model\models\tflite\voice_activator_int8.tflite"
+        cls.model_path = os.path.join(_REPO_ROOT, "models", "tflite", "voice_activator_int8.tflite")
         cls.demo = EndToEndVoiceActivatorDemo(
             tflite_model_path=cls.model_path,
             sample_rate=16000,
             chunk_size_ms=50
         )
         cls.enrollment_paths = [
-            r"D:\SIH_Model\data\raw\custom_keywords\zora\zora_david_rate+0_var0.wav",
-            r"D:\SIH_Model\data\raw\custom_keywords\zora\zora_david_rate+0_var1.wav",
-            r"D:\SIH_Model\data\raw\custom_keywords\zora\zora_david_rate+1_var0.wav"
+            os.path.join(_REPO_ROOT, "data", "raw", "custom_keywords", "zora", "zora_david_rate+0_var0.wav"),
+            os.path.join(_REPO_ROOT, "data", "raw", "custom_keywords", "zora", "zora_david_rate+0_var1.wav"),
+            os.path.join(_REPO_ROOT, "data", "raw", "custom_keywords", "zora", "zora_david_rate+1_var0.wav")
         ]
 
     def test_demo_initialization(self):

@@ -41,7 +41,7 @@ def main():
     source = parser.add_mutually_exclusive_group(required=True)
     source.add_argument("--wav", help="Run inference on one WAV file")
     source.add_argument("--mic", action="store_true", help="Listen through the Pi microphone")
-    parser.add_argument("--threshold", type=float, default=0.88)
+    parser.add_argument("--threshold", type=float, default=0.89)
     args = parser.parse_args()
     if args.wav:
         run_file(args.wav, args.threshold)

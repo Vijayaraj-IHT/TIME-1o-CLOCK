@@ -14,14 +14,16 @@ import pandas as pd
 import soundfile as sf
 import yaml
 from tqdm import tqdm
+# Repo root from this file location (portable; was a hardcoded Windows path).
+_REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 
-def load_config(config_path=r"D:\SIH_Model\configs\config.yaml"):
+def load_config(config_path=os.path.join(_REPO_ROOT, "configs", "config.yaml")):
     if os.path.exists(config_path):
         with open(config_path, "r", encoding="utf-8") as f:
             return yaml.safe_load(f)
     return {}
 
-def get_common_voice_status(data_dir=r"D:\SIH_Model\data\raw\common_voice"):
+def get_common_voice_status(data_dir=os.path.join(_REPO_ROOT, "data", "raw", "common_voice")):
     """
     Inspects whether Mozilla Common Voice audio clips and TSV metadata are present.
     """
@@ -72,7 +74,7 @@ def get_common_voice_status(data_dir=r"D:\SIH_Model\data\raw\common_voice"):
         "speaker_count": speaker_count
     }
 
-def ingest_archive(archive_path, target_dir=r"D:\SIH_Model\data\raw\common_voice", language="en", max_samples=5000):
+def ingest_archive(archive_path, target_dir=os.path.join(_REPO_ROOT, "data", "raw", "common_voice"), language="en", max_samples=5000):
     """
     Extracts an official Common Voice tar.gz archive for a specific language,
     parses TSV metadata, and extracts the configured subset.
@@ -155,7 +157,7 @@ def ingest_archive(archive_path, target_dir=r"D:\SIH_Model\data\raw\common_voice
     print(f"\nExtraction complete! Successfully saved {extracted_count} audio clips to {clips_target}.")
     return inspect_common_voice(target_dir)
 
-def inspect_common_voice(data_dir=r"D:\SIH_Model\data\raw\common_voice"):
+def inspect_common_voice(data_dir=os.path.join(_REPO_ROOT, "data", "raw", "common_voice")):
     status = get_common_voice_status(data_dir)
     print("\n" + "="*60)
     print("MOZILLA COMMON VOICE DATASET INSPECTION REPORT")
@@ -188,7 +190,7 @@ def main():
     parser = argparse.ArgumentParser(description="Acquire, ingest, and inspect Mozilla Common Voice dataset.")
     parser.add_argument("--check-only", action="store_true", help="Only check status")
     parser.add_argument("--archive-path", type=str, default=None, help="Path to downloaded official Common Voice tar.gz archive")
-    parser.add_argument("--data-dir", default=r"D:\SIH_Model\data\raw\common_voice", help="Target raw data directory")
+    parser.add_argument("--data-dir", default=os.path.join(_REPO_ROOT, "data", "raw", "common_voice"), help="Target raw data directory")
     parser.add_argument("--language", default=None, help="Target language code (e.g., 'en')")
     parser.add_argument("--max-samples", type=int, default=None, help="Maximum number of audio samples to extract")
     args = parser.parse_args()

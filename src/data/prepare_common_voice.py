@@ -9,12 +9,14 @@ import pandas as pd
 import soundfile as sf
 from tqdm import tqdm
 
-sys.path.insert(0, r"D:\SIH_Model")
+# Repo root from this file location (portable; was a hardcoded Windows path).
+_REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+sys.path.insert(0, _REPO_ROOT)
 from src.data.metadata import create_metadata_dataframe, validate_metadata_integrity
 from src.data.split_dataset import partition_speakers_deterministic
 
-def prepare_common_voice(raw_dir=r"D:\SIH_Model\data\raw\common_voice",
-                         output_csv=r"D:\SIH_Model\data\metadata\common_voice_metadata.csv"):
+def prepare_common_voice(raw_dir=os.path.join(_REPO_ROOT, "data", "raw", "common_voice"),
+                         output_csv=os.path.join(_REPO_ROOT, "data", "metadata", "common_voice_metadata.csv")):
     print("\n" + "="*60)
     print("PREPARING MOZILLA COMMON VOICE METADATA")
     print("="*60)

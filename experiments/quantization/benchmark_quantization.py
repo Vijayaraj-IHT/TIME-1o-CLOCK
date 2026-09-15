@@ -15,7 +15,9 @@ import numpy as np
 import pandas as pd
 import tensorflow as tf
 
-sys.path.insert(0, r"D:\SIH_Model")
+# Repo root from this file location (portable; was a hardcoded Windows path).
+_REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+sys.path.insert(0, _REPO_ROOT)
 from src.models.tiny_cnn import build_tiny_cnn_encoder
 from src.models.ds_cnn import build_ds_cnn_encoder
 from src.features.mfcc import MFCCFeatureExtractor
@@ -28,15 +30,15 @@ def main():
     print("=" * 80)
 
     # 1. Paths
-    tiny_weights = r"D:\SIH_Model\models\checkpoints\tiny_cnn_metric_best.weights.h5"
-    ds_weights = r"D:\SIH_Model\models\checkpoints\ds_cnn_metric_best.weights.h5"
-    val_manifest = r"D:\SIH_Model\data\metadata\validation_manifest.csv"
-    zora_dir = r"D:\SIH_Model\data\raw\custom_keywords\zora"
+    tiny_weights = os.path.join(_REPO_ROOT, "models", "checkpoints", "tiny_cnn_metric_best.weights.h5")
+    ds_weights = os.path.join(_REPO_ROOT, "models", "checkpoints", "ds_cnn_metric_best.weights.h5")
+    val_manifest = os.path.join(_REPO_ROOT, "data", "metadata", "validation_manifest.csv")
+    zora_dir = os.path.join(_REPO_ROOT, "data", "raw", "custom_keywords", "zora")
 
-    out_fp32_path = r"D:\SIH_Model\models\tflite\voice_activator_fp32.tflite"
-    out_int8_path = r"D:\SIH_Model\models\tflite\voice_activator_int8.tflite"
-    out_ds_int8_path = r"D:\SIH_Model\models\tflite\voice_activator_ds_cnn_int8.tflite"
-    report_path = r"D:\SIH_Model\experiments\quantization\quantization_report.json"
+    out_fp32_path = os.path.join(_REPO_ROOT, "models", "tflite", "voice_activator_fp32.tflite")
+    out_int8_path = os.path.join(_REPO_ROOT, "models", "tflite", "voice_activator_int8.tflite")
+    out_ds_int8_path = os.path.join(_REPO_ROOT, "models", "tflite", "voice_activator_ds_cnn_int8.tflite")
+    report_path = os.path.join(_REPO_ROOT, "experiments", "quantization", "quantization_report.json")
 
     # 2. Build Models & Load Weights
     print("[1/6] Loading trained models and weights...")

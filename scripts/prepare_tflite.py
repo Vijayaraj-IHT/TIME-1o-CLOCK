@@ -17,7 +17,9 @@ import shutil
 import numpy as np
 import tensorflow as tf
 
-sys.path.insert(0, r"D:\SIH_Model")
+# Repo root from this file location (portable; was a hardcoded Windows path).
+_REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.insert(0, _REPO_ROOT)
 from src.export.tflite_to_c_array import tflite_to_c_header, estimate_tensor_arena_size
 from src.models.tiny_cnn import build_tiny_cnn_encoder
 
@@ -50,8 +52,8 @@ def load_enrolled_prototype(header_path: str):
     return keyword_name, prototype
 
 
-def prepare_tflite_models(output_dir: str = r"D:\SIH_Model\outputs\tflite"):
-    base_dir = r"D:\SIH_Model"
+def prepare_tflite_models(output_dir: str = os.path.join(_REPO_ROOT, "outputs", "tflite")):
+    base_dir = _REPO_ROOT
     out_path = os.path.abspath(output_dir)
     os.makedirs(out_path, exist_ok=True)
     
@@ -256,6 +258,6 @@ pytest tests/test_esp32_deployment.py -v
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Prepare TFLite models for deployment")
-    parser.add_argument("--output-dir", default=r"D:\SIH_Model\outputs\tflite", help="Target output directory")
+    parser.add_argument("--output-dir", default=os.path.join(_REPO_ROOT, "outputs", "tflite"), help="Target output directory")
     args = parser.parse_args()
     prepare_tflite_models(args.output_dir)

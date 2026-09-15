@@ -11,6 +11,8 @@ import sys
 import argparse
 import numpy as np
 from typing import Optional, Tuple
+# Repo root from this file location (portable; was a hardcoded Windows path).
+_REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 
 
 def tflite_to_c_header(
@@ -140,12 +142,12 @@ def main():
     parser = argparse.ArgumentParser(description="Export TFLite model to C array for ESP32-S3")
     parser.add_argument(
         "--input",
-        default=r"D:\SIH_Model\models\tflite\voice_activator_int8.tflite",
+        default=os.path.join(_REPO_ROOT, "models", "tflite", "voice_activator_int8.tflite"),
         help="Path to .tflite input model"
     )
     parser.add_argument(
         "--output",
-        default=r"D:\SIH_Model\src\deployment\esp32\tflite_micro_model.h",
+        default=os.path.join(_REPO_ROOT, "src", "deployment", "esp32", "tflite_micro_model.h"),
         help="Path to output C header"
     )
     parser.add_argument("--array-name", default="g_voice_activator_model_data", help="C array name")

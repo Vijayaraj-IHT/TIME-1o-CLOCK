@@ -64,7 +64,7 @@ def main():
     parser = argparse.ArgumentParser(description="TFLite Raspberry Pi keyword server")
     parser.add_argument("--host", default="0.0.0.0")
     parser.add_argument("--port", type=int, default=8765)
-    parser.add_argument("--threshold", type=float, default=0.88)
+    parser.add_argument("--threshold", type=float, default=0.89)
     parser.add_argument("--interval-frames", type=int, default=2)
     parser.add_argument("--persistence", type=int, default=2)
     args = parser.parse_args()

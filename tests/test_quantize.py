@@ -9,7 +9,9 @@ import unittest
 import numpy as np
 import tensorflow as tf
 
-sys.path.insert(0, r"D:\SIH_Model")
+# Repo root from this file location (portable; was a hardcoded Windows path).
+_REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.insert(0, _REPO_ROOT)
 from src.models.tiny_cnn import build_tiny_cnn_encoder
 from src.export.quantize import ModelQuantizer
 
@@ -81,7 +83,7 @@ class TestModelQuantizer(unittest.TestCase):
     def test_save_and_inference(self):
         """Verify saving TFLite model and running inference produces valid normalized embeddings."""
         tflite_fp32 = self.quantizer.convert_to_fp32()
-        temp_path = r"D:\SIH_Model\models\tflite\test_temp.tflite"
+        temp_path = os.path.join(_REPO_ROOT, "models", "tflite", "test_temp.tflite")
         
         saved_bytes = ModelQuantizer.save_tflite_model(tflite_fp32, temp_path)
         self.assertEqual(saved_bytes, len(tflite_fp32))

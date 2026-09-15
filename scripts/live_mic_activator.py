@@ -22,11 +22,14 @@ os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 import logging
 logging.getLogger("tensorflow").setLevel(logging.ERROR)
 
-sys.path.insert(0, r"D:\SIH_Model")
+# Repo root from this file location (portable; was a hardcoded Windows path).
+_REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.insert(0, _REPO_ROOT)
 from src.streaming.demo_pipeline import EndToEndVoiceActivatorDemo
 from src.streaming.ring_buffer import AudioRingBuffer
 from src.streaming.vad import EnergyVAD
 from src.streaming.state_machine import DetectionStateMachine
+from src.models.tflite_quant import quantize_input, dequantize_output, io_quant_params
 from src.features.mfcc import MFCCFeatureExtractor
 import tensorflow as tf
 
@@ -62,8 +65,8 @@ def load_prototype_from_header(header_path: str):
     return name, None
 
 
-def run_live_mic(keyword: str = None, threshold: float = 0.88):
-    header_path = r"D:\SIH_Model\src\deployment\esp32\keyword_prototype.h"
+def run_live_mic(keyword: str = None, threshold: float = 0.89):
+    header_path = os.path.join(_REPO_ROOT, "src", "deployment", "esp32", "keyword_prototype.h")
     hdr_name, hdr_proto = load_prototype_from_header(header_path)
 
     if keyword is None:
@@ -87,7 +90,7 @@ def run_live_mic(keyword: str = None, threshold: float = 0.88):
         prototype = hdr_proto
         print(f"  [PROTOTYPE] Loaded verified '{kw}' prototype directly from keyword_prototype.h")
     else:
-        kw_dir = os.path.join(r"D:\SIH_Model\data\raw\custom_keywords", kw.lower())
+        kw_dir = os.path.join(os.path.join(_REPO_ROOT, "data", "raw", "custom_keywords"), kw.lower())
         if os.path.exists(kw_dir):
             wavs = [os.path.join(kw_dir, f) for f in os.listdir(kw_dir) if f.endswith(".wav")]
             if wavs:
@@ -102,27 +105,31 @@ def run_live_mic(keyword: str = None, threshold: float = 0.88):
         sys.exit(1)
 
     # 2. Setup TFLite Model & Streaming Components
-    model_path = r"D:\SIH_Model\models\tflite\voice_activator_int8.tflite"
+    model_path = os.path.join(_REPO_ROOT, "models", "tflite", "voice_activator_int8.tflite")
     interpreter = tf.lite.Interpreter(model_path=model_path)
     interpreter.allocate_tensors()
     in_idx = interpreter.get_input_details()[0]["index"]
     out_idx = interpreter.get_output_details()[0]["index"]
     in_dtype = interpreter.get_input_details()[0]["dtype"]
+    # Change 3c: quantization-aware I/O (pass-through for float32 models).
+    _, _, _in_scale, _in_zp = io_quant_params(interpreter.get_input_details()[0])
+    _, _, _out_scale, _out_zp = io_quant_params(interpreter.get_output_details()[0])
 
     feature_extractor = MFCCFeatureExtractor(sample_rate=16000, n_mfcc=13)
     ring_buffer = AudioRingBuffer(capacity_samples=16000)
-    vad = EnergyVAD(sample_rate=16000, min_energy_threshold=0.008, energy_multiplier=2.2, hangover_frames=3)
+    # hangover 10 (was 3): same VAD-miss fix as the demo pipeline.
+    vad = EnergyVAD(sample_rate=16000, min_energy_threshold=0.008, energy_multiplier=2.2, hangover_frames=10)
     
     state_machine = DetectionStateMachine(
         threshold=threshold,
         hysteresis=0.05,
-        consecutive_windows=3,
-        smoothing_window=5,
+        consecutive_windows=4,
+        smoothing_window=8,
         cooldown_ms=1500.0
     )
 
     chunk_samples = 800  # 50 ms @ 16 kHz
-    output_test_dir = r"D:\SIH_Model\outputs\live_test"
+    output_test_dir = os.path.join(_REPO_ROOT, "outputs", "live_test")
     os.makedirs(output_test_dir, exist_ok=True)
 
     input_device = sd.query_devices(kind='input')['name']
@@ -151,17 +158,21 @@ def run_live_mic(keyword: str = None, threshold: float = 0.88):
                 # VAD Gating
                 is_speech = vad.is_speech(audio_chunk)
                 if not is_speech and rms < 0.010:
+                    # Change 3a: VAD silence still advances the state machine
+                    # (decay smoothing) but as unobserved: no bg learning, and
+                    # the steady 50ms cadence keeps history fresh (no freeze).
+                    state_machine.process_similarity(0.0, current_time_ms, observed=False)
                     time.sleep(0.001)
                     continue
 
                 # Extract 1.0s window
                 audio_window = ring_buffer.get_snapshot()
                 mfcc = feature_extractor.extract(audio_window)
-                tensor = np.expand_dims(np.expand_dims(mfcc, axis=0), axis=-1).astype(in_dtype)
+                tensor = quantize_input(np.expand_dims(np.expand_dims(mfcc, axis=0), axis=-1), _in_scale, _in_zp, in_dtype)
 
                 interpreter.set_tensor(in_idx, tensor)
                 interpreter.invoke()
-                emb = interpreter.get_tensor(out_idx)[0]
+                emb = dequantize_output(interpreter.get_tensor(out_idx)[0], _out_scale, _out_zp)
                 norm = np.linalg.norm(emb)
                 if norm > 1e-6:
                     emb /= norm
@@ -204,7 +215,7 @@ def run_live_mic(keyword: str = None, threshold: float = 0.88):
 def main():
     parser = argparse.ArgumentParser(description="Live Laptop Microphone Voice Activator")
     parser.add_argument("--keyword", default=None, help="Target keyword name (defaults to active keyword in header)")
-    parser.add_argument("--threshold", type=float, default=0.88, help="Activation similarity threshold (default: 0.88)")
+    parser.add_argument("--threshold", type=float, default=0.89, help="Activation similarity threshold (default: 0.89)")
     args = parser.parse_args()
     run_live_mic(keyword=args.keyword, threshold=args.threshold)
 

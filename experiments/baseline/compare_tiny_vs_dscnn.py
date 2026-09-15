@@ -11,7 +11,9 @@ from datetime import datetime
 import numpy as np
 import tensorflow as tf
 
-sys.path.insert(0, r"D:\SIH_Model")
+# Repo root from this file location (portable; was a hardcoded Windows path).
+_REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+sys.path.insert(0, _REPO_ROOT)
 from src.models.tiny_cnn import build_tiny_cnn_encoder
 from src.models.ds_cnn import build_ds_cnn_encoder
 
@@ -93,12 +95,12 @@ def run_experiment_b():
     print("="*70)
 
     # Save checkpoint for DS-CNN
-    ckpt_dir = r"D:\SIH_Model\models\checkpoints"
+    ckpt_dir = os.path.join(_REPO_ROOT, "models", "checkpoints")
     os.makedirs(ckpt_dir, exist_ok=True)
     ds_cnn.save(os.path.join(ckpt_dir, "ds_cnn_baseline.keras"))
 
     # Save results JSON
-    out_dir = r"D:\SIH_Model\experiments\baseline"
+    out_dir = os.path.join(_REPO_ROOT, "experiments", "baseline")
     out_json = os.path.join(out_dir, "experiment_b_results.json")
     with open(out_json, "w", encoding="utf-8") as f:
         json.dump(results, f, indent=2)

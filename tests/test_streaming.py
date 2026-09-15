@@ -7,7 +7,10 @@ import sys
 import unittest
 import numpy as np
 
-sys.path.insert(0, r"D:\SIH_Model")
+import os
+# Repo root from this file location (portable; was a hardcoded Windows path).
+_REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.insert(0, _REPO_ROOT)
 from src.streaming.ring_buffer import AudioRingBuffer
 from src.streaming.vad import EnergyVAD
 from src.streaming.state_machine import DetectionStateMachine, DetectionState

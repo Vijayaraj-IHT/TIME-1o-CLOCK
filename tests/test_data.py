@@ -8,12 +8,14 @@ import sys
 import unittest
 import pandas as pd
 
-sys.path.insert(0, r"D:\SIH_Model")
+# Repo root from this file location (portable; was a hardcoded Windows path).
+_REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.insert(0, _REPO_ROOT)
 
 class TestProjectStructureAndConfig(unittest.TestCase):
 
     def setUp(self):
-        self.root = r"D:\SIH_Model"
+        self.root = _REPO_ROOT
 
     def test_required_directories_exist(self):
         required_dirs = [

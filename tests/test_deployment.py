@@ -10,7 +10,9 @@ import tempfile
 import unittest
 import numpy as np
 
-sys.path.insert(0, r"D:\SIH_Model")
+# Repo root from this file location (portable; was a hardcoded Windows path).
+_REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.insert(0, _REPO_ROOT)
 from src.export.tflite_to_c_array import tflite_to_c_header, estimate_tensor_arena_size
 
 
@@ -19,13 +21,13 @@ class TestDeploymentPipeline(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.tflite_model_path = r"D:\SIH_Model\models\tflite\voice_activator_int8.tflite"
-        cls.header_path = r"D:\SIH_Model\src\deployment\esp32\tflite_micro_model.h"
-        cls.prototype_path = r"D:\SIH_Model\src\deployment\esp32\keyword_prototype.h"
-        cls.ring_buf_path = r"D:\SIH_Model\src\deployment\esp32\audio_ring_buffer.h"
-        cls.feat_ext_path = r"D:\SIH_Model\src\deployment\esp32\feature_extractor.h"
-        cls.state_mach_path = r"D:\SIH_Model\src\deployment\esp32\activator_state_machine.h"
-        cls.main_cpp_path = r"D:\SIH_Model\src\deployment\esp32\main.cpp"
+        cls.tflite_model_path = os.path.join(_REPO_ROOT, "models", "tflite", "voice_activator_int8.tflite")
+        cls.header_path = os.path.join(_REPO_ROOT, "src", "deployment", "esp32", "tflite_micro_model.h")
+        cls.prototype_path = os.path.join(_REPO_ROOT, "src", "deployment", "esp32", "keyword_prototype.h")
+        cls.ring_buf_path = os.path.join(_REPO_ROOT, "src", "deployment", "esp32", "audio_ring_buffer.h")
+        cls.feat_ext_path = os.path.join(_REPO_ROOT, "src", "deployment", "esp32", "feature_extractor.h")
+        cls.state_mach_path = os.path.join(_REPO_ROOT, "src", "deployment", "esp32", "activator_state_machine.h")
+        cls.main_cpp_path = os.path.join(_REPO_ROOT, "src", "deployment", "esp32", "main.cpp")
 
     def test_tflite_micro_header_matches_binary(self):
         """Verify C header byte array matches the compiled .tflite binary."""
@@ -44,7 +46,7 @@ class TestDeploymentPipeline(unittest.TestCase):
         self.assertLess(binary_size, 100 * 1024, "INT8 model exceeds 100 KB flash limit")
 
     def test_keyword_prototype_header(self):
-        """Verify enrolled keyword prototype format and unit norm."""
+        """Verify enrolled keyword prototype format and unit norm (Change-2 aware)."""
         self.assertTrue(os.path.exists(self.prototype_path))
         with open(self.prototype_path, "r", encoding="utf-8") as f:
             proto_text = f.read()
@@ -53,13 +55,23 @@ class TestDeploymentPipeline(unittest.TestCase):
         # Verify valid keyword name is present (e.g. ZORA or CLEOPATRA)
         self.assertTrue("ASWIN" in proto_text or "ZORA" in proto_text or "CLEOPATRA" in proto_text or "ENROLLED_KEYWORD_NAME" in proto_text)
 
-        # Extract floats from header
-        matches = re.findall(r"[-+]?[0-9]*\.?[0-9]+f", proto_text)
-        self.assertEqual(len(matches), 32, "Expected 32-D prototype embedding")
+        # Extract floats per array: KEYWORD_PROTOTYPE[32] + GARBAGE_PROTOTYPE[32] (+ margin scalar)
+        kw_block = re.search(r"KEYWORD_PROTOTYPE\[KEYWORD_PROTOTYPE_DIM\] = \{(.*?)\};", proto_text, re.S)
+        self.assertIsNotNone(kw_block, "KEYWORD_PROTOTYPE array missing")
+        kw_matches = re.findall(r"[-+]?[0-9]*\.?[0-9]+f", kw_block.group(1))
+        self.assertEqual(len(kw_matches), 32, "Expected 32-D prototype embedding")
 
-        vals = np.array([float(m.rstrip("f")) for m in matches])
+        vals = np.array([float(m.rstrip("f")) for m in kw_matches])
         norm = np.linalg.norm(vals)
         self.assertAlmostEqual(norm, 1.0, places=3, msg="Prototype must be on unit hypersphere")
+
+        # Phase-1 Change 2: garbage array + margin must exist (zeros = veto disabled)
+        self.assertIn("GARBAGE_PROTOTYPE", proto_text)
+        self.assertIn("GARBAGE_MARGIN", proto_text)
+        gb_block = re.search(r"GARBAGE_PROTOTYPE\[KEYWORD_PROTOTYPE_DIM\] = \{(.*?)\};", proto_text, re.S)
+        self.assertIsNotNone(gb_block, "GARBAGE_PROTOTYPE array missing")
+        gb_matches = re.findall(r"[-+]?[0-9]*\.?[0-9]+f", gb_block.group(1))
+        self.assertEqual(len(gb_matches), 32, "Expected 32-D garbage embedding")
 
     def test_firmware_source_files_exist(self):
         """Verify all modular C++ firmware components are present."""

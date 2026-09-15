@@ -7,10 +7,12 @@ import os
 import sys
 import pandas as pd
 
-sys.path.insert(0, r"D:\SIH_Model")
+# Repo root from this file location (portable; was a hardcoded Windows path).
+_REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+sys.path.insert(0, _REPO_ROOT)
 from src.data.metadata import validate_metadata_integrity, save_manifests
 
-def combine_and_generate_manifests(sc_df, cv_df, output_dir=r"D:\SIH_Model\data\metadata"):
+def combine_and_generate_manifests(sc_df, cv_df, output_dir=os.path.join(_REPO_ROOT, "data", "metadata")):
     print("\n" + "="*60)
     print("COMBINING DATASETS AND GENERATING FINAL MANIFESTS")
     print("="*60)

@@ -9,7 +9,9 @@ import platform
 import argparse
 
 # Add src to Python path
-sys.path.insert(0, r"D:\SIH_Model")
+# Repo root from this file location (portable; was a hardcoded Windows path).
+_REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.insert(0, _REPO_ROOT)
 
 from src.data.download_speech_commands import get_dataset_status as get_sc_status
 from src.data.download_common_voice import get_common_voice_status as get_cv_status

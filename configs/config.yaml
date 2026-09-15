@@ -8,7 +8,7 @@ project:
   name: "sih_kws_activator"
   problem_statement: "SIH-26172-Voice-Activator-Edge-Devices"
   organization: "ISRO"
-  root_dir: "D:/SIH_Model"
+  root_dir: "."   # repo root (portable; was a hardcoded Windows path, and no code reads this key)
   random_seed: 42
 
 audio:
@@ -66,11 +66,20 @@ enrollment:
 
 detection:
   similarity_metric: "cosine"
-  threshold: 0.78          # Preliminary operating threshold; tuned empirically in M11
-  consecutive_windows: 3   # Confirmation persistence count
-  smoothing_window: 5      # Moving average window
+  threshold: 0.89          # Phase-1 operating point (EER-calibrated; was 0.78 preliminary -> FA flood)
+  consecutive_windows: 4   # Confirmation persistence count
+  smoothing_window: 8      # Moving average window
   hysteresis: 0.05         # Reset deadband (threshold - hysteresis)
+  garbage_margin: 0.05     # Change-2 veto margin (kw - garbage must exceed this)
   cooldown_ms: 1500        # Re-trigger lockout period
+  adaptive_threshold: true # Change-5: background-tracking tau_eff (upward-only; false => fixed tau)
+  adapt_alpha: 0.02        # EMA rate for background score stats (~2.5s time constant @ 50ms chunks)
+  adapt_k: 2.0             # tau_eff = max(tau, bg_mean + k*bg_std)
+  adapt_max: 0.95          # Ceiling: tau_eff never exceeds this
+  adapt_warmup_frames: 40  # Learn-but-don't-apply for the first N frames (boot transient guard)
+  stale_gap_ms: 500      # Change-3b: stream discontinuity reset; a frame gap (or clock
+                         # jump back) larger than this clears smoothing/persistence and
+                         # re-arms at LISTENING (bg stats + latency marker are kept)
 
 augmentation:
   noise: true
